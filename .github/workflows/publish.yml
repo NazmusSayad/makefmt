@@ -126,11 +126,22 @@ jobs:
       - run: npx --yes @vscode/vsce@4.0.0 publish --azure-credential --packagePath makefmt.vsix
 
   publish-open-vsx:
-    needs: package-vscode
+    needs: publish-marketplace
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/download-artifact@v4
+      - id: registry
+        run: |
+          status=$(curl -s -o /dev/null -w '%{http_code}' https://open-vsx.org/api/NazmusSayad/makefmt)
+          case "$status" in
+            200) echo "exists=true" >> "$GITHUB_OUTPUT" ;;
+            404) echo "exists=false" >> "$GITHUB_OUTPUT"
+                 echo "::notice::makefmt is not on Open VSX yet. Publish the release's makefmt.vsix by hand once, then register the trusted publisher." ;;
+            *) echo "::error::Open VSX returned HTTP $status"; exit 1 ;;
+          esac
+      - if: steps.registry.outputs.exists == 'true'
+        uses: actions/download-artifact@v4
         with:
           name: vsix
-      - run: npx --yes ovsx@1.2.0 publish makefmt.vsix --trusted-publishing
+      - if: steps.registry.outputs.exists == 'true'
+        run: npx --yes ovsx@1.2.0 publish makefmt.vsix --trusted-publishing
