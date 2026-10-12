@@ -1,8 +1,36 @@
 # makefmt
 
-Fast, opinionated Makefile formatter. Aligns assignments and line continuations and indents conditional blocks.
+Fast, safe Makefile formatter. Aligns assignments and line continuations and indents conditional blocks.
 
-The formatter runs inside VS Code as WebAssembly, so formatting is instant and works on vscode.dev too.
+```make
+CC=gcc
+CFLAGS   :=-O2 -Wall
+
+ifeq ($(DEBUG),1)
+CFLAGS += -g
+endif
+
+all:main.o   util.o
+	$(CC) $(CFLAGS) -o app $^
+```
+
+becomes
+
+```make
+CC     = gcc
+CFLAGS := -O2 -Wall
+
+ifeq ($(DEBUG),1)
+  CFLAGS += -g
+endif
+
+all: main.o util.o
+	$(CC) $(CFLAGS) -o app $^
+```
+
+makefmt never changes what make does. Recipe lines and `define` bodies are left exactly as written.
+
+The formatter is written in Rust and runs inside VS Code as WebAssembly, so formatting is instant and works on vscode.dev too.
 
 ## Usage
 

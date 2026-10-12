@@ -3,4 +3,5 @@
 !dist/extension.js
 !dist/makefmt.wasm
 !README.md
+!icon.png
 !LICENSE

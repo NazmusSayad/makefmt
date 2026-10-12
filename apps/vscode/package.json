@@ -1,14 +1,24 @@
 {
   "name": "makefmt",
-  "displayName": "makefmt",
-  "description": "Fast, opinionated Makefile formatter",
+  "displayName": "makefmt - Makefile Formatter",
+  "description": "Fast, safe Makefile formatter. Aligns assignments and line continuations, indents conditionals, and never touches recipes.",
   "version": "0.0.0",
   "publisher": "NazmusSayad",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1e293b",
+    "theme": "dark"
+  },
   "license": "MIT",
+  "pricing": "Free",
   "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/NazmusSayad/makefmt"
+  },
+  "homepage": "https://github.com/NazmusSayad/makefmt#readme",
+  "bugs": {
+    "url": "https://github.com/NazmusSayad/makefmt/issues"
   },
   "categories": [
     "Formatters"
@@ -16,8 +26,12 @@
   "keywords": [
     "makefile",
     "make",
+    "gnu make",
+    "mk",
     "formatter",
-    "gnu make"
+    "format",
+    "beautify",
+    "prettier"
   ],
   "engines": {
     "vscode": "^1.100.0"

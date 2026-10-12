@@ -9,9 +9,21 @@ const manifest = {
   name: 'makefmt',
   version: '0.0.0',
   type: 'module',
-  description: 'Fast, opinionated Makefile formatter',
-  keywords: ['makefile', 'make', 'formatter', 'fmt'],
+  description:
+    'Fast, safe Makefile formatter. Aligns assignments and line continuations, indents conditionals, and never touches recipes.',
+  keywords: [
+    'makefile',
+    'make',
+    'gnu make',
+    'formatter',
+    'format',
+    'fmt',
+    'cli',
+  ],
   license: 'MIT',
+  author: 'Nazmus Sayad',
+  homepage: 'https://github.com/NazmusSayad/makefmt#readme',
+  bugs: { url: 'https://github.com/NazmusSayad/makefmt/issues' },
   repository: {
     type: 'git',
     url: 'git+https://github.com/NazmusSayad/makefmt.git',

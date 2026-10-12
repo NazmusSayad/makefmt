@@ -1,6 +1,10 @@
+<img src="https://raw.githubusercontent.com/NazmusSayad/makefmt/main/apps/vscode/icon.png" alt="" width="96" align="right">
+
 # makefmt
 
-A fast, opinionated Makefile formatter, for the command line and VS Code.
+A fast, safe Makefile formatter, for the command line and VS Code.
+
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=NazmusSayad.makefmt) · [Open VSX](https://open-vsx.org/extension/NazmusSayad/makefmt) · [npm](https://www.npmjs.com/package/makefmt)
 
 The formatter is written in Rust. The CLI ships as a native binary, and the VS Code extension runs the same code as WebAssembly inside the editor, so format on save is instant.
 
@@ -48,7 +52,7 @@ makefmt never changes what make does. Recipe lines and `define` bodies are left 
 npx makefmt --write .
 ```
 
-For VS Code, install the **makefmt** extension. It becomes the default formatter for Makefiles, so **Format Document** and format on save just work.
+For VS Code, install the extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=NazmusSayad.makefmt), or from [Open VSX](https://open-vsx.org/extension/NazmusSayad/makefmt) for VSCodium, Cursor and Windsurf. It becomes the default formatter for Makefiles, so **Format Document** and format on save just work.
 
 Runs on macOS (Apple Silicon and Intel), Linux (x64 and arm64) and Windows (x64).
 

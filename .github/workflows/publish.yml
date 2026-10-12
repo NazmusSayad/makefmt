@@ -38,13 +38,13 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - run: rustup target add ${{ matrix.target }}
       - shell: bash
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: MAKEFMT_VERSION="${TAG#v}" cargo build -p makefmt-cli --release --target ${{ matrix.target }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.npm }}
           path: target/${{ matrix.target }}/release/${{ matrix.binary }}
@@ -61,9 +61,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
@@ -72,7 +72,7 @@ jobs:
       - run: node scripts/build-npm.mts
       - run: version-patch node "${{ github.event.release.tag_name }}" --prefix v --pkg-file dist/npm/package.json
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: '{darwin,linux,win32}-*'
           path: dist/npm/bin
@@ -88,11 +88,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 12.11.2
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm install -g version-patch
@@ -101,7 +101,7 @@ jobs:
       - run: version-patch node "${{ github.event.release.tag_name }}" --prefix v --pkg-file apps/vscode/package.json
       - run: pnpm --filter ./apps/vscode package
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: vsix
           path: apps/vscode/makefmt.vsix
@@ -116,7 +116,7 @@ jobs:
     environment: release
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: vsix
       - uses: azure/login@v3
@@ -141,7 +141,7 @@ jobs:
             *) echo "::error::Open VSX returned HTTP $status"; exit 1 ;;
           esac
       - if: steps.registry.outputs.exists == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vsix
       - if: steps.registry.outputs.exists == 'true'
