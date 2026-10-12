@@ -74,6 +74,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
+          pattern: '{darwin,linux,win32}-*'
           path: dist/npm/bin
       - run: chmod +x dist/npm/bin/*/makefmt
 
