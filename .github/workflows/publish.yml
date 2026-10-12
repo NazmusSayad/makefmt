@@ -127,7 +127,7 @@ jobs:
       - run: npx --yes @vscode/vsce@4.0.0 publish --azure-credential --packagePath makefmt.vsix
 
   publish-open-vsx:
-    needs: publish-marketplace
+    needs: package-vscode
     runs-on: ubuntu-latest
 
     steps:
