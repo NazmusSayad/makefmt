@@ -1,0 +1,7 @@
+{
+  "name": "cli",
+  "scripts": {
+    "dev": "cargo run -p makefmt-cli --",
+    "build": "cargo build -p makefmt-cli --release"
+  }
+}

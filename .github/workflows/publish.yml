@@ -1,0 +1,136 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            npm: darwin-arm64
+            binary: makefmt
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            npm: darwin-x64
+            binary: makefmt
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            npm: linux-x64
+            binary: makefmt
+          - os: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            npm: linux-arm64
+            binary: makefmt
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            npm: win32-x64
+            binary: makefmt.exe
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v5
+      - run: rustup target add ${{ matrix.target }}
+      - shell: bash
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: MAKEFMT_VERSION="${TAG#v}" cargo build -p makefmt-cli --release --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.npm }}
+          path: target/${{ matrix.target }}/release/${{ matrix.binary }}
+          if-no-files-found: error
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tar -czf makefmt-${{ matrix.target }}.tar.gz -C target/${{ matrix.target }}/release ${{ matrix.binary }}
+          gh release upload "${{ github.event.release.tag_name }}" makefmt-${{ matrix.target }}.tar.gz --clobber
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - run: npm install -g npm@latest version-patch
+      - run: node scripts/build-npm.mts
+      - run: version-patch node "${{ github.event.release.tag_name }}" --prefix v --pkg-file dist/npm/package.json
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist/npm/bin
+      - run: chmod +x dist/npm/bin/*/makefmt
+
+      - run: npm publish --access public --tag ${{ github.event.release.prerelease && 'next' || 'latest' }}
+        working-directory: dist/npm
+
+  package-vscode:
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.11.2
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - run: npm install -g version-patch
+      - run: rustup target add wasm32-unknown-unknown
+      - run: pnpm install --frozen-lockfile
+      - run: version-patch node "${{ github.event.release.tag_name }}" --prefix v --pkg-file apps/vscode/package.json
+      - run: pnpm --filter ./apps/vscode package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: apps/vscode/makefmt.vsix
+          if-no-files-found: error
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" apps/vscode/makefmt.vsix --clobber
+
+  publish-marketplace:
+    needs: package-vscode
+    runs-on: ubuntu-latest
+    environment: release
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: vsix
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      - run: npx --yes @vscode/vsce@4.0.0 publish --azure-credential --packagePath makefmt.vsix
+
+  publish-open-vsx:
+    needs: package-vscode
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: vsix
+      - run: npx --yes ovsx@1.2.0 publish makefmt.vsix --trusted-publishing

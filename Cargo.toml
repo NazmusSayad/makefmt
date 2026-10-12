@@ -1,0 +1,9 @@
+[workspace]
+members = ["crates/core", "apps/cli", "apps/vscode"]
+resolver = "3"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

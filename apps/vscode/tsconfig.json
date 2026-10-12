@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "lib": ["ES2022", "WebWorker"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["vscode"]
+  },
+  "include": ["src"]
+}

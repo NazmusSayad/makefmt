@@ -1,0 +1,6 @@
+**
+!package.json
+!dist/extension.js
+!dist/makefmt.wasm
+!README.md
+!LICENSE

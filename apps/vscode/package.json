@@ -1,0 +1,85 @@
+{
+  "name": "makefmt",
+  "displayName": "makefmt",
+  "description": "Fast, opinionated Makefile formatter",
+  "version": "0.0.0",
+  "publisher": "NazmusSayad",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NazmusSayad/makefmt"
+  },
+  "categories": [
+    "Formatters"
+  ],
+  "keywords": [
+    "makefile",
+    "make",
+    "formatter",
+    "gnu make"
+  ],
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:makefile"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "configuration": {
+      "title": "makefmt",
+      "properties": {
+        "makefmt.alignAssignments": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Align the assignment operators of consecutive variable assignments."
+        },
+        "makefmt.alignContinuations": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Align the trailing backslashes of continued lines."
+        },
+        "makefmt.indentConditionals": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Indent the contents of conditional blocks such as ifeq and ifdef."
+        },
+        "makefmt.indentWidth": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 0,
+          "scope": "resource",
+          "description": "Spaces per indentation level."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[makefile]": {
+        "editor.defaultFormatter": "NazmusSayad.makefmt"
+      }
+    }
+  },
+  "scripts": {
+    "build:wasm": "cargo build -p makefmt-vscode --release --target wasm32-unknown-unknown && mkdir -p dist && cp ../../target/wasm32-unknown-unknown/release/makefmt_vscode.wasm dist/makefmt.wasm",
+    "build": "pnpm build:wasm && esbuild src/extension.ts --bundle --outfile=dist/extension.js --format=cjs --platform=neutral --target=es2022 --external:vscode --minify",
+    "typecheck": "tsc --noEmit",
+    "package": "pnpm build && cp ../../LICENSE LICENSE && vsce package --no-dependencies --out makefmt.vsix"
+  },
+  "devDependencies": {
+    "@types/vscode": "~1.100.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

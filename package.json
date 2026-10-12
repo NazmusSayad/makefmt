@@ -1,0 +1,20 @@
+{
+  "scripts": {
+    "build": "pnpm --filter ./apps/cli build && pnpm --filter ./apps/vscode build",
+    "prepare": "husky",
+    "typecheck": "tsc -p tsconfig.json && pnpm --filter ./apps/vscode typecheck && cargo check --all-targets",
+    "lint": "pnpm typecheck && oxlint . && cargo clippy --all-targets -- -D warnings && cargo fmt --check",
+    "lint:fix": "oxlint . --fix && cargo fmt"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "eslint-plugin-check-file": "^3.3.2",
+    "eslint-plugin-oxfmt": "^0.27.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.87.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "typescript": "^7.0.2"
+  }
+}

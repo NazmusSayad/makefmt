@@ -1,0 +1,7 @@
+packages:
+  - 'apps/*'
+
+allowBuilds:
+  esbuild: true
+  unrs-resolver: false
+  '@vscode/vsce-sign': false
