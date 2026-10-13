@@ -180,7 +180,7 @@ ruleTester.run('format', makefmt.rules.format, {
       code: 'ifdef A\n\tifdef B\n\t\tX = 1\n\tendif\nendif\n',
       options: [{ indentWidth: 0 }],
     },
-    'all:\n\t  echo "recipes are formatted"\n',
+    'all:\n\techo "recipes are formatted"\n',
     {
       code: 'all:\n\t  echo   "recipes are kept"\n',
       options: [{ formatRecipes: false }],

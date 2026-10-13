@@ -296,7 +296,29 @@ const LINE_ENDING_CASES: [(&str, &str, &str); 16] = [
         "\u{FEFF}\u{FEFF}X   := 1\nLONG := 2\n",
     ),
 ];
-const UNCHANGED_CASES: [(&str, &str); 17] = [
+const REPAIR_CASES: [(&str, &str, &str); 4] = [
+    (
+        "space_indented_command",
+        "all:\n\techo a\n    echo   b\n\techo c\n",
+        "all:\n\techo a\n\techo b\n\techo c\n",
+    ),
+    (
+        "space_indented_export",
+        "all:\n\techo a\n      export X=\"$(Y)\"\n\techo $$X\n",
+        "all:\n\techo a\n\texport X=\"$(Y)\"\n\techo $$X\n",
+    ),
+    (
+        "space_indented_assignment",
+        "all:\n\techo a\n  X = 1\n\techo b\n",
+        "all:\n\techo a\n\tX = 1\n\techo b\n",
+    ),
+    (
+        "space_indented_oneshell",
+        "SHELL := /bin/bash\n.ONESHELL:\nall:\n\t@if true; then\n\t\techo a\n          export X=1\n\t\techo b\n\tfi\n",
+        "SHELL := /bin/bash\n.ONESHELL:\nall:\n\t@if true; then\n\t  echo a\n\t  export X=1\n\t  echo b\n\tfi\n",
+    ),
+];
+const UNCHANGED_CASES: [(&str, &str); 18] = [
     (
         "recipes_other_shell",
         "SHELL = /bin/dash\nall:\n\techo   a\n",
@@ -311,8 +333,12 @@ const UNCHANGED_CASES: [(&str, &str); 17] = [
     ),
     ("recipes_shell_append", "SHELL += -e\nall:\n\techo   a\n"),
     (
-        "recipes_oneshell",
-        ".ONESHELL:\nall:\n\tif true; then\n\t  echo   a\n\tfi\n",
+        "recipes_oneshell_other_shell",
+        "SHELL = /bin/dash\n.ONESHELL:\nall:\n\tif true; then\n\t  echo   a\n\tfi\n",
+    ),
+    (
+        "recipes_oneshell_conditional",
+        "ifdef MAKEFMT_UNDEFINED\n  .ONESHELL:\nendif\nall:\n\tif true; then\n\t  echo   a\n\tfi\n",
     ),
     ("recipes_conditional_word", "all:\n\tifeq   (a,b)\n"),
     (
@@ -1103,6 +1129,11 @@ fn fixture_trials() -> Vec<Trial> {
             Options::default(),
         );
     }
+    for (name, source, expected) in REPAIR_CASES {
+        trials.push(Trial::test(format!("repair::{name}"), move || {
+            check_snapshot(source, expected, &Options::default())
+        }));
+    }
     for (name, source, expected) in LINE_ENDING_CASES {
         push_fixture(
             &mut trials,
@@ -1343,11 +1374,21 @@ fn normalize(text: &str, source: &str, shell: bool) -> String {
     let mut recipe = false;
     let mut prefix = '\t';
     let mut logical: Vec<&str> = Vec::new();
+    let oneshell = text.lines().any(|line| line.starts_with(".ONESHELL:"));
     for line in text.lines() {
         if ignored.iter().any(|prefix| line.starts_with(prefix))
             || line.contains("hash-table stats")
         {
             continue;
+        }
+        if recipe && shell && oneshell {
+            if !line.is_empty() {
+                logical.push(line);
+                continue;
+            }
+            out.push_str(&canonical_script(&logical, prefix));
+            out.push('\n');
+            logical.clear();
         }
         if recipe && shell && !line.is_empty() {
             logical.push(line);
@@ -1445,6 +1486,38 @@ fn canonical_recipe(lines: &[&str], prefix: char) -> String {
     match shfmt::format(&shell, Lang::Bash, 0) {
         Ok(formatted) => format!("{printed}{flags} shell {formatted:?} {refs:?}"),
         Err(_) => format!("{printed}{flags} raw {:?}", text.trim_matches(BLANKS)),
+    }
+}
+
+fn canonical_script(lines: &[&str], prefix: char) -> String {
+    let mut script = Vec::new();
+    let mut flags = String::new();
+    let mut joined = false;
+    for (k, line) in lines.iter().enumerate() {
+        if joined {
+            script.push(line.strip_prefix(prefix).unwrap_or(line).to_string());
+        } else {
+            let mut chars = line.chars();
+            chars.next();
+            let first = chars.as_str();
+            let body = first.trim_start_matches([' ', '\t', '@', '-', '+']);
+            if k == 0 {
+                flags = first[..first.len() - body.len()]
+                    .chars()
+                    .filter(|c| !BLANKS.contains(c))
+                    .collect();
+            }
+            script.push(body.to_string());
+        }
+        joined = continued(line);
+    }
+    let text = script.join("\n");
+    let Some((shell, refs)) = shell_text(&text) else {
+        return format!("{flags} raw {text:?}");
+    };
+    match shfmt::format(&shell, Lang::Bash, 0) {
+        Ok(formatted) => format!("{flags} shell {formatted:?} {refs:?}"),
+        Err(_) => format!("{flags} raw {text:?}"),
     }
 }
 

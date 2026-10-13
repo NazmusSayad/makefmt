@@ -1,0 +1,42 @@
+SHELL       := /bin/bash
+.SHELLFLAGS := -o pipefail -c
+.ONESHELL:
+
+AUTO ?= false
+ROOT ?= ..
+
+ensure:
+	@if [ "$(AUTO)" = "true" ] && command -v colima >/dev/null 2>&1; then
+	  if colima status >/dev/null 2>&1; then
+	    echo "running"
+	  else
+	    echo "starting"
+	    colima start
+	  fi
+	fi
+
+down: ensure
+	export HOST="$(HOST)"
+	export PORT="$(PORT)"
+	docker compose down
+
+dev: ensure
+	@concurrently \
+	  --names "UI,API" \
+	  "$(MAKE) dev-ui" \
+	  "$(MAKE) dev-api"
+
+dev-api:
+	@if [ -d "$(ROOT)/api" ]; then
+	  cd "$(ROOT)/api"
+	  export URL="$(BASE)"
+	  export KEY="$$SECRET"
+
+	  PORT="$(PORT)" air
+	fi
+
+db:
+	@if [ -d "$(ROOT)" ]; then
+	  psql -tAc "SELECT 1" | grep -q 1 ||
+	    psql -c "CREATE DATABASE x"
+	fi

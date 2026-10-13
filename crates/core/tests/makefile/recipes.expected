@@ -5,7 +5,7 @@ Q  ?= @
 all: build
 	@echo "building with $(CC)" >build.log
 	-rm -f *.o
-	@ echo spaced flags
+	@echo spaced flags
 	$(Q)$(CC) -o $@ $^
 	for f in $(SRCS); do \
 	  echo $$f; \

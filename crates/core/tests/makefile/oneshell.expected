@@ -1,4 +1,4 @@
 .ONESHELL:
 all:
-	echo one   
-	echo two	
+	echo one
+	echo two

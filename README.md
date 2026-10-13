@@ -44,11 +44,13 @@ all: $(SRCS:.c=.o) lib.a
 	$(CC) $(CFLAGS) -o app $^
 ```
 
-makefmt never changes what make does. `define` bodies are left exactly as written, and anything it can't format safely stays as it is.
+makefmt never changes what a working Makefile does. `define` bodies are left exactly as written, and anything it can't format safely stays as it is.
 
-Recipe lines are formatted as shell with the rules of [shfmt](https://github.com/mvdan/sh), as sh or, when `SHELL` is bash, as bash. Each formatted recipe is checked to hand the shell the same command as before. Recipes in `.ONESHELL` Makefiles or for other shells, and any recipe that can't be formatted safely, are left as they are. Set `format_recipes = false` to leave all recipes alone.
+Recipes are formatted as shell with the rules of [shfmt](https://github.com/mvdan/sh), as sh or, when `SHELL` is bash, as bash. With `.ONESHELL`, each recipe is formatted as one script, so `if` blocks and loops spread over several lines are indented too. Each formatted recipe is checked to hand the shell the same commands as before. Recipes for other shells, and any recipe that can't be formatted safely, are left as they are. Set `format_recipes = false` to leave all recipes alone.
 
-The one thing it can't see is a `.RECIPEPREFIX` set outside the file, in an included Makefile, on the command line or in the environment. Set `.RECIPEPREFIX` in the Makefile that uses it.
+A recipe line indented with spaces instead of a tab, which make rejects with `missing separator` or `recipe commences before first target`, is turned back into a recipe line.
+
+The one thing it can't see is a `.RECIPEPREFIX`, `SHELL` or `.ONESHELL` set outside the file, in an included Makefile, on the command line or in the environment. Set them in the Makefile that uses them.
 
 Justfiles get the same output as `just --fmt`, without needing `just` installed. makefmt contains a port of just's own parser and printer, and is tested against just 1.58.0.
 

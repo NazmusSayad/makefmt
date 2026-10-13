@@ -28,7 +28,7 @@ all: main.o util.o
 	$(CC) $(CFLAGS) -o app $^
 ```
 
-makefmt never changes what make does. `define` bodies are left exactly as written, and recipes are formatted as sh or bash only when the shell gets the same command as before.
+makefmt never changes what a working Makefile does. `define` bodies are left exactly as written, and recipes are formatted as sh or bash only when the shell gets the same commands as before.
 
 Justfiles get the same output as `just --fmt`, without needing `just` installed.
 

@@ -1,4 +1,5 @@
 mod recipe;
+mod repair;
 
 use crate::Options;
 
@@ -52,16 +53,26 @@ fn format_source(source: &str, options: &Options) -> String {
     if source.replace("\r\n", "\n").contains('\r') {
         return source.to_string();
     }
+    let repaired = match options.format_recipes {
+        true => repair::repair(source),
+        false => None,
+    };
+    let source = match &repaired {
+        Some(text) => text.as_str(),
+        None => source,
+    };
     let eol = match source.find('\n') {
         Some(i) if source[..i].ends_with('\r') => "\r\n",
         _ => "\n",
     };
-    let oneshell = source.contains(".ONESHELL");
-    let posix = source.contains(".POSIX");
-    let lang = match options.format_recipes && !oneshell {
-        true => recipe::shell_lang(source),
-        false => None,
+    let mode = oneshell_mode(source);
+    let lang = match (options.format_recipes, mode) {
+        (true, Some(oneshell)) => recipe::shell_lang(source, oneshell),
+        _ => None,
     };
+    let oneshell = mode != Some(false);
+    let tidy = options.format_recipes && mode == Some(false);
+    let posix = source.contains(".POSIX");
     let lines: Vec<&str> = source.lines().collect();
     let mut items = Vec::with_capacity(lines.len());
     let mut prefix = '\t';
@@ -69,6 +80,8 @@ fn format_source(source: &str, options: &Options) -> String {
     let mut nest = 0;
     let mut hidden_conditional = false;
     let mut in_rule = false;
+    let mut inline = false;
+    let mut scripted = false;
     let mut i = 0;
     while i < lines.len() {
         let start = i;
@@ -133,18 +146,55 @@ fn format_source(source: &str, options: &Options) -> String {
         let word = first_word(first);
 
         if recipe {
-            if in_rule
+            let shell_line = in_rule && !is_define(first) && word != "endef";
+            if shell_line
+                && oneshell
+                && !scripted
                 && let Some(lang) = lang
-                && !is_define(first)
-                && !CONDITIONALS.contains(&word)
-                && !matches!(word, "else" | "endif")
-                && let Some(lines) = recipe::format(group, prefix, lang, options.indent_width)
             {
-                items.extend(lines.into_iter().map(Item::Recipe));
+                scripted = true;
+                if !inline
+                    && let Some(end) = oneshell_end(&lines, start, prefix)
+                    && let Some(out) = recipe::format_oneshell(
+                        &lines[start..end],
+                        prefix,
+                        lang,
+                        options.indent_width,
+                    )
+                {
+                    hidden_conditional |= lines[start..end].iter().any(|line| {
+                        line.strip_prefix(prefix).is_some_and(|body| {
+                            CONDITIONALS.contains(&first_word(body.trim_start_matches(BLANKS)))
+                        })
+                    });
+                    items.extend(out.into_iter().map(Item::Recipe));
+                    i = end;
+                    continue;
+                }
+            }
+            if shell_line
+                && !oneshell
+                && let Some(lang) = lang
+                && let Some(out) = recipe::format(group, prefix, lang, options.indent_width)
+            {
+                items.extend(out.into_iter().map(Item::Recipe));
                 continue;
             }
             let keep = keep || oneshell;
             for (k, line) in group.iter().enumerate() {
+                if k == 0 && shell_line && tidy {
+                    let tidied = recipe::tidy(line, prefix);
+                    let text = if keep {
+                        &tidied
+                    } else {
+                        trim_trailing(&tidied)
+                    };
+                    items.push(Item::Recipe(match text.is_empty() {
+                        true => prefix.to_string(),
+                        false => text.to_string(),
+                    }));
+                    continue;
+                }
                 let text = if keep { line } else { trim_trailing(line) };
                 if k == 0 && text.is_empty() {
                     items.push(Item::Raw(&line[..prefix.len_utf8()]));
@@ -166,6 +216,8 @@ fn format_source(source: &str, options: &Options) -> String {
                 && !is_define(first)
                 && !KEYWORDS.contains(&word)
                 && matches!(separator(first), Some((Sep::Rule, _, end)) if !first[end..].contains('='));
+            inline = in_rule && group.iter().any(|line| line.contains(';'));
+            scripted = false;
         }
 
         let bail = needs_raw(group, first, prefix, assign.is_some(), posix);
@@ -219,6 +271,86 @@ fn format_source(source: &str, options: &Options) -> String {
         out.truncate(out.len() - eol.len());
     }
     out
+}
+
+fn oneshell_mode(source: &str) -> Option<bool> {
+    let mentions = source.matches(".ONESHELL").count();
+    if mentions == 0 {
+        return Some(false);
+    }
+    let mut depth = 0usize;
+    let mut found = 0;
+    for line in source.lines() {
+        if line.starts_with('\t') {
+            continue;
+        }
+        let text = line.trim_start_matches(BLANKS);
+        let word = first_word(text);
+        if CONDITIONALS.contains(&word) || is_define(text) {
+            depth += 1;
+        } else if word == "endif" || word == "endef" {
+            depth = depth.saturating_sub(1);
+        } else if depth == 0
+            && let Some(rest) = line.strip_prefix(".ONESHELL")
+            && rest.trim_start_matches(BLANKS).starts_with(':')
+        {
+            found += 1;
+        }
+    }
+    match found == mentions {
+        true => Some(true),
+        false => None,
+    }
+}
+
+fn oneshell_end(lines: &[&str], start: usize, prefix: char) -> Option<usize> {
+    let mut i = start;
+    let mut end = start;
+    let mut after = lines.len();
+    while i < lines.len() {
+        let group_start = i;
+        while i + 1 < lines.len() && continued(lines[i]) {
+            i += 1;
+        }
+        i += 1;
+        let line0 = lines[group_start];
+        if let Some(body) = line0.strip_prefix(prefix) {
+            let first = body.trim_start_matches(BLANKS);
+            let word = first_word(first);
+            if lines[group_start..i]
+                .iter()
+                .any(|line| line.contains(".RECIPEPREFIX"))
+                || word == "endef"
+                || is_define(first)
+            {
+                return None;
+            }
+            end = i;
+            continue;
+        }
+        if line0.trim_matches(BLANKS).is_empty() {
+            continue;
+        }
+        after = group_start;
+        break;
+    }
+    let mut i = after;
+    while i < lines.len() {
+        let group_start = i;
+        while i + 1 < lines.len() && continued(lines[i]) {
+            i += 1;
+        }
+        i += 1;
+        let line0 = lines[group_start];
+        let text = line0.trim_start_matches(BLANKS);
+        if line0.starts_with(prefix) || CONDITIONALS.contains(&first_word(text)) {
+            return None;
+        }
+        if !text.is_empty() && !text.starts_with('#') {
+            break;
+        }
+    }
+    Some(end)
 }
 
 fn render(items: &[Item], eol: &str, options: &Options) -> String {

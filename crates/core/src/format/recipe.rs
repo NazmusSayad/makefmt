@@ -5,7 +5,7 @@ const MARKER: &str = "__mkfmt";
 const FLAGS: [char; 5] = [' ', '\t', '@', '-', '+'];
 const ASSIGN_OPS: [&str; 5] = ["=", ":=", "::=", ":::=", "?="];
 
-pub fn shell_lang(source: &str) -> Option<Lang> {
+pub fn shell_lang(source: &str, oneshell: bool) -> Option<Lang> {
     let mut found = None;
     for line in source.lines() {
         let mut rest = line;
@@ -22,7 +22,7 @@ pub fn shell_lang(source: &str) -> Option<Lang> {
                 }
                 continue;
             };
-            let lang = value_lang(value)?;
+            let lang = value_lang(value, oneshell)?;
             if found.is_some_and(|found| found != lang) {
                 return None;
             }
@@ -35,7 +35,7 @@ pub fn shell_lang(source: &str) -> Option<Lang> {
     }
 }
 
-fn value_lang(value: &str) -> Option<Lang> {
+fn value_lang(value: &str, oneshell: bool) -> Option<Lang> {
     let value = match value.find('#') {
         Some(at) => &value[..at],
         None => value,
@@ -46,7 +46,7 @@ fn value_lang(value: &str) -> Option<Lang> {
     let words: Vec<&str> = value.split_whitespace().collect();
     let name = match words.as_slice() {
         [path] => basename(path),
-        [env, name] if basename(env) == "env" => name,
+        [env, name] if basename(env) == "env" && !oneshell => name,
         _ => return None,
     };
     match name {
@@ -63,13 +63,24 @@ fn basename(path: &str) -> &str {
     }
 }
 
+pub fn tidy(line: &str, prefix: char) -> String {
+    let (pre, rest) = head(line, prefix);
+    format!("{pre}{rest}")
+}
+
+fn head(line: &str, prefix: char) -> (String, &str) {
+    let body = &line[prefix.len_utf8()..];
+    let rest = body.trim_start_matches(FLAGS);
+    let flags = body[..body.len() - rest.len()].replace([' ', '\t'], "");
+    (format!("{prefix}{flags}"), rest)
+}
+
 pub fn format(group: &[&str], prefix: char, lang: Lang, indent: usize) -> Option<Vec<String>> {
     if continued(group[group.len() - 1]) {
         return None;
     }
-    let body = &group[0][prefix.len_utf8()..];
-    let pre = &group[0][..group[0].len() - body.trim_start_matches(FLAGS).len()];
-    let text = simulate(group, prefix);
+    let (pre, _) = head(group[0], prefix);
+    let text = script(group, prefix, false);
     let (shell, refs) = to_shell(&text)?;
     if shell.trim().is_empty() {
         return None;
@@ -92,7 +103,7 @@ pub fn format(group: &[&str], prefix: char, lang: Lang, indent: usize) -> Option
     if continued(rendered[rendered.len() - 1]) {
         return None;
     }
-    let text = simulate(&rendered, prefix);
+    let text = script(&rendered, prefix, false);
     let (again, again_refs) = to_shell(&text)?;
     if again_refs != refs || shfmt::format(&again, lang, indent).ok()? != formatted {
         return None;
@@ -100,15 +111,66 @@ pub fn format(group: &[&str], prefix: char, lang: Lang, indent: usize) -> Option
     Some(out)
 }
 
-fn simulate(group: &[&str], prefix: char) -> String {
-    let mut text = group[0][prefix.len_utf8()..]
-        .trim_start_matches(FLAGS)
-        .to_string();
-    for line in &group[1..] {
-        text.push('\n');
-        text.push_str(line.strip_prefix(prefix).unwrap_or(line));
+pub fn format_oneshell(
+    lines: &[&str],
+    prefix: char,
+    lang: Lang,
+    indent: usize,
+) -> Option<Vec<String>> {
+    let (pre, _) = head(lines[0], prefix);
+    let layout = script(lines, prefix, true);
+    let real = script(lines, prefix, false);
+    let (shell, refs) = to_shell(&layout)?;
+    let (real_shell, real_refs) = to_shell(&real)?;
+    if shell.trim().is_empty() {
+        return None;
     }
-    text
+    let formatted = shfmt::format(&shell, lang, indent).ok()?;
+    let expected = shfmt::format(&real_shell, lang, indent).ok()?;
+    let restored = restore(formatted.strip_suffix('\n')?, &refs)?;
+    for blank in [String::new(), prefix.to_string()] {
+        let mut out = Vec::new();
+        let mut joined = false;
+        for (k, line) in restored.split('\n').enumerate() {
+            out.push(match k {
+                0 => format!("{pre}{line}"),
+                _ if joined || !line.is_empty() => format!("{prefix}{line}"),
+                _ => blank.clone(),
+            });
+            joined = continued(line);
+        }
+        let rendered: Vec<&str> = out.iter().map(String::as_str).collect();
+        let layout = script(&rendered, prefix, true);
+        let real = script(&rendered, prefix, false);
+        let same = |text: &str, refs: &[&str], formatted: &str| {
+            to_shell(text).is_some_and(|(shell, again)| {
+                again == refs && shfmt::format(&shell, lang, indent).is_ok_and(|f| f == formatted)
+            })
+        };
+        if !continued(rendered[rendered.len() - 1])
+            && same(&layout, &refs, &formatted)
+            && same(&real, &real_refs, &expected)
+        {
+            return Some(out);
+        }
+    }
+    None
+}
+
+fn script(lines: &[&str], prefix: char, layout: bool) -> String {
+    let mut out = Vec::with_capacity(lines.len());
+    let mut joined = false;
+    for line in lines {
+        if joined {
+            out.push(line.strip_prefix(prefix).unwrap_or(line));
+        } else if let Some(body) = line.strip_prefix(prefix) {
+            out.push(body.trim_start_matches(FLAGS));
+        } else if layout {
+            out.push("");
+        }
+        joined = continued(line);
+    }
+    out.join("\n")
 }
 
 fn to_shell(text: &str) -> Option<(String, Vec<&str>)> {

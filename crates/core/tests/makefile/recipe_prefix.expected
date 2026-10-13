@@ -2,7 +2,7 @@
 .RECIPEPREFIX = >
 all:
 >@echo with prefix
->  echo indented
+>echo indented
 ifdef A
   X = 1
 endif
