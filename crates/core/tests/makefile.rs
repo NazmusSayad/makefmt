@@ -989,13 +989,14 @@ fn soup(seed: u64) -> String {
 
 fn option_matrix() -> Vec<Options> {
     let mut all = Vec::new();
-    for bits in 0..8 {
+    for bits in 0..16 {
         for indent_width in INDENT_WIDTHS {
             all.push(Options {
                 align_assignments: bits & 1 != 0,
                 align_continuations: bits & 2 != 0,
                 indent_conditionals: bits & 4 != 0,
                 indent_width,
+                trim_trailing_whitespace: bits & 8 != 0,
             });
         }
     }
@@ -1004,11 +1005,12 @@ fn option_matrix() -> Vec<Options> {
 
 fn label(options: &Options) -> String {
     format!(
-        "align_assignments={},align_continuations={},indent_conditionals={},indent_width={}",
+        "align_assignments={},align_continuations={},indent_conditionals={},indent_width={},trim_trailing_whitespace={}",
         options.align_assignments,
         options.align_continuations,
         options.indent_conditionals,
-        options.indent_width
+        options.indent_width,
+        options.trim_trailing_whitespace
     )
 }
 
@@ -1181,6 +1183,16 @@ fn check_case(source: &str, options: &Options, kept: &[Kept]) -> Result<(), Fail
             .into());
         }
     }
+    if options.trim_trailing_whitespace {
+        let untrimmed = format(
+            source,
+            &Options {
+                trim_trailing_whitespace: false,
+                ..options.clone()
+            },
+        );
+        return check_only_trimmed(source, &untrimmed, &output);
+    }
     let (before, after) = make_databases(source, &output)?;
     if before != after {
         return Err(format!(
@@ -1190,6 +1202,26 @@ fn check_case(source: &str, options: &Options, kept: &[Kept]) -> Result<(), Fail
         .into());
     }
     Ok(())
+}
+
+fn check_only_trimmed(source: &str, untrimmed: &str, trimmed: &str) -> Result<(), Failed> {
+    let same_shape = untrimmed.lines().count() == trimmed.lines().count()
+        && untrimmed.ends_with('\n') == trimmed.ends_with('\n');
+    let only_trimmed = untrimmed
+        .lines()
+        .zip(trimmed.lines())
+        .all(|(before, after)| {
+            before == after
+                || (before.trim_end_matches(BLANKS) == after && !after.ends_with(['\\', '$']))
+        });
+    if same_shape && only_trimmed {
+        return Ok(());
+    }
+    Err(format!(
+        "trimming changed more than trailing whitespace\n{}\n--- input ---\n{source:?}",
+        first_difference(untrimmed, trimmed)
+    )
+    .into())
 }
 
 fn first_difference(a: &str, b: &str) -> String {

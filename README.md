@@ -72,15 +72,16 @@ makefmt [OPTIONS] [PATHS]...
 
 With no paths, or `-`, makefmt formats stdin to stdout as a Makefile. Directories are searched for Makefiles (`Makefile`, `makefile`, `GNUmakefile`, `*.mk`, `*.mak`, `*.make`) and justfiles (`justfile` in any case, `.justfile`, `*.just`), skipping other hidden files and folders and anything in `.gitignore`.
 
-| Option                         | Description                                              |
-| ------------------------------ | -------------------------------------------------------- |
-| `-w`, `--write`                | Rewrite files in place                                   |
-| `--check`                      | List unformatted files and exit with 1 if there are any  |
-| `--indent-width <N>`           | Spaces per indentation level (default `2`)               |
-| `--align-assignments <BOOL>`   | Align `=`, `:=`, `?=`, `+=` (default `true`)             |
-| `--align-continuations <BOOL>` | Align trailing `\` (default `true`)                      |
-| `--indent-conditionals <BOOL>` | Indent `ifeq`/`ifdef` blocks (default `true`)            |
-| `--language <LANGUAGE>`        | Format stdin and named files as `makefile` or `justfile` |
+| Option                              | Description                                                         |
+| ----------------------------------- | ------------------------------------------------------------------- |
+| `-w`, `--write`                     | Rewrite files in place                                              |
+| `--check`                           | List unformatted files and exit with 1 if there are any             |
+| `--indent-width <N>`                | Spaces per indentation level (default `2`)                          |
+| `--align-assignments <BOOL>`        | Align `=`, `:=`, `?=`, `+=` (default `true`)                        |
+| `--align-continuations <BOOL>`      | Align trailing `\` (default `true`)                                 |
+| `--indent-conditionals <BOOL>`      | Indent `ifeq`/`ifdef` blocks (default `true`)                       |
+| `--trim-trailing-whitespace <BOOL>` | Also trim trailing whitespace on assignment lines (default `false`) |
+| `--language <LANGUAGE>`             | Format stdin and named files as `makefile` or `justfile`            |
 
 Exit codes: `0` success, `1` `--check` found unformatted files, `2` error.
 
@@ -93,9 +94,12 @@ align_assignments = true
 align_continuations = true
 indent_conditionals = true
 indent_width = 2
+trim_trailing_whitespace = false
 ```
 
 CLI flags override the file. In VS Code and ESLint, the file overrides the `makefmt.*` settings and rule options. These options only apply to Makefiles; justfiles always use the style of `just --fmt`.
+
+Trailing whitespace is removed everywhere except on variable assignments, because make keeps it as part of the value: `PORT := 2184   ` sets `PORT` to `2184   `, so `$(PORT)/db` becomes `2184   /db`. If that whitespace is never intended in your project, set `trim_trailing_whitespace = true`. Lines where trimming would change more than the value, such as one ending in `\   `, are still left alone.
 
 ## Development
 

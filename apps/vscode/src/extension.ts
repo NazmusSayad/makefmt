@@ -48,6 +48,7 @@ async function readConfig(document: vscode.TextDocument) {
     `align_continuations = ${JSON.stringify(settings.get('alignContinuations'))}`,
     `indent_conditionals = ${JSON.stringify(settings.get('indentConditionals'))}`,
     `indent_width = ${JSON.stringify(settings.get('indentWidth'))}`,
+    `trim_trailing_whitespace = ${JSON.stringify(settings.get('trimTrailingWhitespace'))}`,
   ].join('\n')
 }
 

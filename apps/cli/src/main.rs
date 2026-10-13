@@ -47,6 +47,12 @@ struct Cli {
     indent_conditionals: Option<bool>,
     #[arg(
         long,
+        value_name = "BOOL",
+        help = "Also trim trailing whitespace that make keeps in variable values"
+    )]
+    trim_trailing_whitespace: Option<bool>,
+    #[arg(
+        long,
         value_enum,
         help = "Format stdin and files passed by name as this language instead of detecting it from the file name; stdin defaults to makefile"
     )]
@@ -257,6 +263,9 @@ fn load_options(directory: &Path, cli: &Cli) -> Result<Options, String> {
     }
     if let Some(indent_conditionals) = cli.indent_conditionals {
         options.indent_conditionals = indent_conditionals;
+    }
+    if let Some(trim_trailing_whitespace) = cli.trim_trailing_whitespace {
+        options.trim_trailing_whitespace = trim_trailing_whitespace;
     }
     Ok(options)
 }

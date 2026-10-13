@@ -51,12 +51,15 @@ makefmt becomes the default formatter for Makefiles and justfiles once installed
 
 ## Settings
 
-| Setting                      | Default | Description                                         |
-| ---------------------------- | ------- | --------------------------------------------------- |
-| `makefmt.alignAssignments`   | `true`  | Align assignment operators of consecutive variables |
-| `makefmt.alignContinuations` | `true`  | Align trailing backslashes of continued lines       |
-| `makefmt.indentConditionals` | `true`  | Indent conditional blocks such as `ifeq`/`ifdef`    |
-| `makefmt.indentWidth`        | `2`     | Spaces per indentation level                        |
+| Setting                          | Default | Description                                         |
+| -------------------------------- | ------- | --------------------------------------------------- |
+| `makefmt.alignAssignments`       | `true`  | Align assignment operators of consecutive variables |
+| `makefmt.alignContinuations`     | `true`  | Align trailing backslashes of continued lines       |
+| `makefmt.indentConditionals`     | `true`  | Indent conditional blocks such as `ifeq`/`ifdef`    |
+| `makefmt.indentWidth`            | `2`     | Spaces per indentation level                        |
+| `makefmt.trimTrailingWhitespace` | `false` | Also trim trailing whitespace on assignment lines   |
+
+Make keeps trailing whitespace in a variable's value, so `PORT := 2184   ` sets `PORT` to `2184   `. makefmt leaves it alone unless you turn on trimming, which can change values that relied on it.
 
 ## Project config
 
@@ -67,6 +70,7 @@ align_assignments = true
 align_continuations = true
 indent_conditionals = true
 indent_width = 4
+trim_trailing_whitespace = false
 ```
 
 Missing keys use the defaults. Unknown keys are an error. The settings and the file only apply to Makefiles; justfiles always use the style of `just --fmt`.

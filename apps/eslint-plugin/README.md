@@ -73,12 +73,15 @@ The plugin provides two languages, `makefmt/makefile` and `makefmt/justfile`, an
 
 ## Rule options
 
-| Option               | Default | Description                                         |
-| -------------------- | ------- | --------------------------------------------------- |
-| `alignAssignments`   | `true`  | Align assignment operators of consecutive variables |
-| `alignContinuations` | `true`  | Align trailing backslashes of continued lines       |
-| `indentConditionals` | `true`  | Indent conditional blocks such as `ifeq`/`ifdef`    |
-| `indentWidth`        | `2`     | Spaces per indentation level                        |
+| Option                   | Default | Description                                         |
+| ------------------------ | ------- | --------------------------------------------------- |
+| `alignAssignments`       | `true`  | Align assignment operators of consecutive variables |
+| `alignContinuations`     | `true`  | Align trailing backslashes of continued lines       |
+| `indentConditionals`     | `true`  | Indent conditional blocks such as `ifeq`/`ifdef`    |
+| `indentWidth`            | `2`     | Spaces per indentation level                        |
+| `trimTrailingWhitespace` | `false` | Also trim trailing whitespace on assignment lines   |
+
+Make keeps trailing whitespace in a variable's value, so `PORT := 2184   ` sets `PORT` to `2184   `. makefmt leaves it alone unless you turn on trimming, which can change values that relied on it.
 
 The options only apply to Makefiles. Justfiles always use the style of `just --fmt`.
 
@@ -91,6 +94,7 @@ align_assignments = true
 align_continuations = true
 indent_conditionals = true
 indent_width = 4
+trim_trailing_whitespace = false
 ```
 
 Missing keys use the defaults. Unknown keys are an error.

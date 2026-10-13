@@ -24,6 +24,7 @@ interface FormatOptions {
   alignContinuations?: boolean
   indentConditionals?: boolean
   indentWidth?: number
+  trimTrailingWhitespace?: boolean
 }
 
 const wasm = readFileSync(new URL('./makefmt.wasm', import.meta.url))
@@ -128,6 +129,7 @@ const formatRule: RuleDefinition<{
           alignContinuations: { type: 'boolean' },
           indentConditionals: { type: 'boolean' },
           indentWidth: { type: 'integer', minimum: 0 },
+          trimTrailingWhitespace: { type: 'boolean' },
         },
         additionalProperties: false,
       },
@@ -218,6 +220,9 @@ function readConfig(filename: string, options: FormatOptions | undefined) {
   }
   if (options.indentWidth !== undefined) {
     lines.push(`indent_width = ${options.indentWidth}`)
+  }
+  if (options.trimTrailingWhitespace !== undefined) {
+    lines.push(`trim_trailing_whitespace = ${options.trimTrailingWhitespace}`)
   }
   return lines.join('\n')
 }

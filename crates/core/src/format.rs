@@ -71,7 +71,7 @@ fn format_source(source: &str, options: &Options) -> String {
         let group = &lines[start..i];
         let line0 = group[0];
         let recipe = line0.starts_with(prefix);
-        let keep = group.iter().any(|line| line.contains('='));
+        let keep = !options.trim_trailing_whitespace && group.iter().any(|line| line.contains('='));
         let body = if recipe {
             &line0[prefix.len_utf8()..]
         } else {
@@ -249,7 +249,15 @@ fn render(items: &[Item], eol: &str, options: &Options) -> String {
                 };
                 let mut head = String::new();
                 push_assignment(&mut head, name, pad, op, value);
-                push_line(&mut out, eol, depth * unit, &head, tail, true, options);
+                push_line(
+                    &mut out,
+                    eol,
+                    depth * unit,
+                    &head,
+                    tail,
+                    !options.trim_trailing_whitespace,
+                    options,
+                );
             }
         }
     }

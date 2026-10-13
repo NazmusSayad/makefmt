@@ -74,18 +74,21 @@ const sources = [
   '',
   '\n\n\n',
   'CC=gcc\r\nX  :=  1\r\n',
+  'PORT := 2184   \nURL = http://x:$(PORT)/db\t\nall:\n\techo hi   \n',
 ]
 
 const alignAssignmentsValues = [undefined, true, false]
 const alignContinuationsValues = [undefined, true, false]
 const indentConditionalsValues = [undefined, true, false]
 const indentWidthValues = [undefined, 0, 4]
+const trimTrailingWhitespaceValues = [undefined, true, false]
 
 interface FormatOptions {
   alignAssignments?: boolean
   alignContinuations?: boolean
   indentConditionals?: boolean
   indentWidth?: number
+  trimTrailingWhitespace?: boolean
 }
 
 const optionSets: { options: FormatOptions; config: string }[] = []
@@ -93,25 +96,31 @@ for (const alignAssignments of alignAssignmentsValues) {
   for (const alignContinuations of alignContinuationsValues) {
     for (const indentConditionals of indentConditionalsValues) {
       for (const indentWidth of indentWidthValues) {
-        const options: FormatOptions = {}
-        const config = []
-        if (alignAssignments !== undefined) {
-          options.alignAssignments = alignAssignments
-          config.push(`align_assignments = ${alignAssignments}`)
+        for (const trimTrailingWhitespace of trimTrailingWhitespaceValues) {
+          const options: FormatOptions = {}
+          const config = []
+          if (alignAssignments !== undefined) {
+            options.alignAssignments = alignAssignments
+            config.push(`align_assignments = ${alignAssignments}`)
+          }
+          if (alignContinuations !== undefined) {
+            options.alignContinuations = alignContinuations
+            config.push(`align_continuations = ${alignContinuations}`)
+          }
+          if (indentConditionals !== undefined) {
+            options.indentConditionals = indentConditionals
+            config.push(`indent_conditionals = ${indentConditionals}`)
+          }
+          if (indentWidth !== undefined) {
+            options.indentWidth = indentWidth
+            config.push(`indent_width = ${indentWidth}`)
+          }
+          if (trimTrailingWhitespace !== undefined) {
+            options.trimTrailingWhitespace = trimTrailingWhitespace
+            config.push(`trim_trailing_whitespace = ${trimTrailingWhitespace}`)
+          }
+          optionSets.push({ options, config: config.join('\n') })
         }
-        if (alignContinuations !== undefined) {
-          options.alignContinuations = alignContinuations
-          config.push(`align_continuations = ${alignContinuations}`)
-        }
-        if (indentConditionals !== undefined) {
-          options.indentConditionals = indentConditionals
-          config.push(`indent_conditionals = ${indentConditionals}`)
-        }
-        if (indentWidth !== undefined) {
-          options.indentWidth = indentWidth
-          config.push(`indent_width = ${indentWidth}`)
-        }
-        optionSets.push({ options, config: config.join('\n') })
       }
     }
   }
@@ -173,8 +182,17 @@ ruleTester.run('format', makefmt.rules.format, {
     },
     'all:\n\t  echo   "recipes are never touched"\n',
     'define F\n  a  =  b\nendef\n',
+    'PORT := 2184   \n',
+    { code: 'PORT := 2184   \n', options: [{ trimTrailingWhitespace: false }] },
+    { code: 'K = a \\   \n', options: [{ trimTrailingWhitespace: true }] },
   ],
   invalid: [
+    {
+      code: 'PORT := 2184   \nQ = " a "\t\n',
+      options: [{ trimTrailingWhitespace: true }],
+      output: 'PORT := 2184\nQ    = " a "\n',
+      errors: [{ messageId: 'unformatted' }],
+    },
     {
       code: readme,
       output: readmeFormatted,
@@ -453,7 +471,7 @@ ruleTester.run('format with .makefmt.toml', makefmt.rules.format, {
       errors: [
         {
           message:
-            'makefmt: TOML parse error at line 1, column 1\n  |\n1 | tab_width = 4\n  | ^^^^^^^^^\nunknown field `tab_width`, expected one of `align_assignments`, `align_continuations`, `indent_conditionals`, `indent_width`\n',
+            'makefmt: TOML parse error at line 1, column 1\n  |\n1 | tab_width = 4\n  | ^^^^^^^^^\nunknown field `tab_width`, expected one of `align_assignments`, `align_continuations`, `indent_conditionals`, `indent_width`, `trim_trailing_whitespace`\n',
         },
       ],
     },
