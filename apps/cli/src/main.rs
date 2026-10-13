@@ -1,5 +1,6 @@
 use std::fs;
 use std::io::{self, Read, Write};
+use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -35,8 +36,16 @@ struct Cli {
     check: bool,
     #[arg(long, value_name = "N", help = "Spaces per indentation level")]
     indent_width: Option<usize>,
+    #[arg(long, value_name = "N", help = "Most consecutive blank lines to keep")]
+    max_blank_lines: Option<NonZeroUsize>,
     #[arg(long, value_name = "BOOL", help = "Align assignment operators")]
     align_assignments: Option<bool>,
+    #[arg(
+        long,
+        value_name = "BOOL",
+        help = "Keep aligning assignments across comment lines"
+    )]
+    align_across_comments: Option<bool>,
     #[arg(
         long,
         value_name = "BOOL",
@@ -255,8 +264,14 @@ fn load_options(directory: &Path, cli: &Cli) -> Result<Options, String> {
     if let Some(indent_width) = cli.indent_width {
         options.indent_width = indent_width;
     }
+    if let Some(max_blank_lines) = cli.max_blank_lines {
+        options.max_blank_lines = max_blank_lines;
+    }
     if let Some(align_assignments) = cli.align_assignments {
         options.align_assignments = align_assignments;
+    }
+    if let Some(align_across_comments) = cli.align_across_comments {
+        options.align_across_comments = align_across_comments;
     }
     if let Some(align_continuations) = cli.align_continuations {
         options.align_continuations = align_continuations;

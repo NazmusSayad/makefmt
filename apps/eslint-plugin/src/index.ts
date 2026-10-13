@@ -20,10 +20,12 @@ interface RootNode {
 }
 
 interface FormatOptions {
+  alignAcrossComments?: boolean
   alignAssignments?: boolean
   alignContinuations?: boolean
   indentConditionals?: boolean
   indentWidth?: number
+  maxBlankLines?: number
   trimTrailingWhitespace?: boolean
 }
 
@@ -125,10 +127,12 @@ const formatRule: RuleDefinition<{
       {
         type: 'object',
         properties: {
+          alignAcrossComments: { type: 'boolean' },
           alignAssignments: { type: 'boolean' },
           alignContinuations: { type: 'boolean' },
           indentConditionals: { type: 'boolean' },
           indentWidth: { type: 'integer', minimum: 0 },
+          maxBlankLines: { type: 'integer', minimum: 1 },
           trimTrailingWhitespace: { type: 'boolean' },
         },
         additionalProperties: false,
@@ -209,6 +213,9 @@ function readConfig(filename: string, options: FormatOptions | undefined) {
   }
   if (options === undefined) return ''
   const lines = []
+  if (options.alignAcrossComments !== undefined) {
+    lines.push(`align_across_comments = ${options.alignAcrossComments}`)
+  }
   if (options.alignAssignments !== undefined) {
     lines.push(`align_assignments = ${options.alignAssignments}`)
   }
@@ -220,6 +227,9 @@ function readConfig(filename: string, options: FormatOptions | undefined) {
   }
   if (options.indentWidth !== undefined) {
     lines.push(`indent_width = ${options.indentWidth}`)
+  }
+  if (options.maxBlankLines !== undefined) {
+    lines.push(`max_blank_lines = ${options.maxBlankLines}`)
   }
   if (options.trimTrailingWhitespace !== undefined) {
     lines.push(`trim_trailing_whitespace = ${options.trimTrailingWhitespace}`)

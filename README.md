@@ -77,6 +77,8 @@ With no paths, or `-`, makefmt formats stdin to stdout as a Makefile. Directorie
 | `-w`, `--write`                     | Rewrite files in place                                              |
 | `--check`                           | List unformatted files and exit with 1 if there are any             |
 | `--indent-width <N>`                | Spaces per indentation level (default `2`)                          |
+| `--max-blank-lines <N>`             | Most consecutive blank lines to keep (default `1`)                  |
+| `--align-across-comments <BOOL>`    | Keep aligning across comment lines (default `false`)                |
 | `--align-assignments <BOOL>`        | Align `=`, `:=`, `?=`, `+=` (default `true`)                        |
 | `--align-continuations <BOOL>`      | Align trailing `\` (default `true`)                                 |
 | `--indent-conditionals <BOOL>`      | Indent `ifeq`/`ifdef` blocks (default `true`)                       |
@@ -90,10 +92,12 @@ Exit codes: `0` success, `1` `--check` found unformatted files, `2` error.
 Put a `.makefmt.toml` in your project. The CLI, the VS Code extension and the ESLint plugin all use the nearest one above the Makefile:
 
 ```toml
+align_across_comments = false
 align_assignments = true
 align_continuations = true
 indent_conditionals = true
 indent_width = 2
+max_blank_lines = 1
 trim_trailing_whitespace = false
 ```
 

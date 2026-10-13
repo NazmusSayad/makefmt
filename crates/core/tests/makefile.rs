@@ -1,4 +1,5 @@
 use std::fs;
+use std::num::NonZeroUsize;
 use std::path::Path;
 use std::process::Command;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -8,7 +9,7 @@ use makefmt::{Options, format};
 
 const GENERATED_FILES: u64 = 700;
 const FUZZ_INPUTS: u64 = 5000;
-const INDENT_WIDTHS: [usize; 4] = [0, 1, 2, 4];
+const LAYOUTS: [(usize, usize); 4] = [(0, 1), (1, 2), (2, 1), (4, 3)];
 const BLANKS: [char; 2] = [' ', '\t'];
 
 const NAMES: [&str; 12] = [
@@ -989,13 +990,16 @@ fn soup(seed: u64) -> String {
 
 fn option_matrix() -> Vec<Options> {
     let mut all = Vec::new();
-    for bits in 0..16 {
-        for indent_width in INDENT_WIDTHS {
+    for bits in 0..32 {
+        for (indent_width, max_blank_lines) in LAYOUTS {
             all.push(Options {
+                align_across_comments: bits & 16 != 0,
                 align_assignments: bits & 1 != 0,
                 align_continuations: bits & 2 != 0,
                 indent_conditionals: bits & 4 != 0,
                 indent_width,
+                max_blank_lines: NonZeroUsize::new(max_blank_lines)
+                    .expect("layouts keep at least one blank line"),
                 trim_trailing_whitespace: bits & 8 != 0,
             });
         }
@@ -1005,11 +1009,13 @@ fn option_matrix() -> Vec<Options> {
 
 fn label(options: &Options) -> String {
     format!(
-        "align_assignments={},align_continuations={},indent_conditionals={},indent_width={},trim_trailing_whitespace={}",
+        "align_across_comments={},align_assignments={},align_continuations={},indent_conditionals={},indent_width={},max_blank_lines={},trim_trailing_whitespace={}",
+        options.align_across_comments,
         options.align_assignments,
         options.align_continuations,
         options.indent_conditionals,
         options.indent_width,
+        options.max_blank_lines,
         options.trim_trailing_whitespace
     )
 }

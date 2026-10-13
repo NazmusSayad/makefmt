@@ -185,8 +185,31 @@ ruleTester.run('format', makefmt.rules.format, {
     'PORT := 2184   \n',
     { code: 'PORT := 2184   \n', options: [{ trimTrailingWhitespace: false }] },
     { code: 'K = a \\   \n', options: [{ trimTrailingWhitespace: true }] },
+    'A = 1\n# c\nLONG = 2\n',
+    {
+      code: 'A    = 1\n# c\nLONG = 2\n',
+      options: [{ alignAcrossComments: true }],
+    },
+    { code: 'A = 1\n\n\nB = 2\n', options: [{ maxBlankLines: 2 }] },
   ],
   invalid: [
+    {
+      code: 'A = 1\n# c\nLONG = 2\n',
+      options: [{ alignAcrossComments: true }],
+      output: 'A    = 1\n# c\nLONG = 2\n',
+      errors: [{ messageId: 'unformatted' }],
+    },
+    {
+      code: 'A = 1\n\n\nB = 2\n',
+      output: 'A = 1\n\nB = 2\n',
+      errors: [{ messageId: 'unformatted' }],
+    },
+    {
+      code: 'A = 1\n\n\n\nB = 2\n',
+      options: [{ maxBlankLines: 2 }],
+      output: 'A = 1\n\n\nB = 2\n',
+      errors: [{ messageId: 'unformatted' }],
+    },
     {
       code: 'PORT := 2184   \nQ = " a "\t\n',
       options: [{ trimTrailingWhitespace: true }],
@@ -313,6 +336,9 @@ describe('rule options schema', () => {
     { indentWidth: -1 },
     { indentWidth: 1.5 },
     { indentWidth: '2' },
+    { alignAcrossComments: 'true' },
+    { maxBlankLines: 0 },
+    { maxBlankLines: 1.5 },
   ]
   for (const options of invalidOptions) {
     test(`rejects ${JSON.stringify(options)}`, () => {
@@ -471,7 +497,7 @@ ruleTester.run('format with .makefmt.toml', makefmt.rules.format, {
       errors: [
         {
           message:
-            'makefmt: TOML parse error at line 1, column 1\n  |\n1 | tab_width = 4\n  | ^^^^^^^^^\nunknown field `tab_width`, expected one of `align_assignments`, `align_continuations`, `indent_conditionals`, `indent_width`, `trim_trailing_whitespace`\n',
+            'makefmt: TOML parse error at line 1, column 1\n  |\n1 | tab_width = 4\n  | ^^^^^^^^^\nunknown field `tab_width`, expected one of `align_across_comments`, `align_assignments`, `align_continuations`, `indent_conditionals`, `indent_width`, `max_blank_lines`, `trim_trailing_whitespace`\n',
         },
       ],
     },

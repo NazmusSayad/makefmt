@@ -199,17 +199,20 @@ fn render(items: &[Item], eol: &str, options: &Options) -> String {
         0
     };
     let mut out = String::new();
-    let mut blank = false;
+    let mut blanks = 0;
     let mut width = 0;
+    let skipped = |item: &&Item| options.align_across_comments && is_comment(item);
     for (n, item) in items.iter().enumerate() {
         if let Item::Blank = item {
-            blank = !out.is_empty();
+            if !out.is_empty() {
+                blanks += 1;
+            }
             continue;
         }
-        if blank {
+        for _ in 0..blanks.min(options.max_blank_lines.get()) {
             out.push_str(eol);
-            blank = false;
         }
+        blanks = 0;
         match item {
             Item::Blank => {}
             Item::Raw(line) => {
@@ -229,11 +232,13 @@ fn render(items: &[Item], eol: &str, options: &Options) -> String {
                 value,
                 tail,
             } => {
+                let previous = items[..n].iter().rev().find(|item| !skipped(item));
                 let starts_group =
-                    n == 0 || !matches!(items[n - 1], Item::Assign { depth: d, .. } if d == *depth);
+                    !matches!(previous, Some(Item::Assign { depth: d, .. }) if d == depth);
                 if starts_group {
                     width = items[n..]
                         .iter()
+                        .filter(|item| !skipped(item))
                         .map_while(|item| match item {
                             Item::Assign { depth: d, name, .. } if d == depth => {
                                 Some(name.chars().count())
@@ -262,6 +267,10 @@ fn render(items: &[Item], eol: &str, options: &Options) -> String {
         }
     }
     out
+}
+
+fn is_comment(item: &Item) -> bool {
+    matches!(item, Item::Text { text, .. } if text.starts_with('#'))
 }
 
 fn push_line(

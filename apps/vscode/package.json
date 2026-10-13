@@ -77,6 +77,12 @@
           "scope": "resource",
           "description": "Align the assignment operators of consecutive variable assignments."
         },
+        "makefmt.alignAcrossComments": {
+          "type": "boolean",
+          "default": false,
+          "scope": "resource",
+          "description": "Keep aligning assignment operators across comment lines instead of starting a new group."
+        },
         "makefmt.alignContinuations": {
           "type": "boolean",
           "default": true,
@@ -95,6 +101,13 @@
           "minimum": 0,
           "scope": "resource",
           "description": "Spaces per indentation level."
+        },
+        "makefmt.maxBlankLines": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 1,
+          "scope": "resource",
+          "description": "Most consecutive blank lines to keep."
         },
         "makefmt.trimTrailingWhitespace": {
           "type": "boolean",

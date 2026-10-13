@@ -44,10 +44,12 @@ async function readConfig(document: vscode.TextDocument) {
   }
   const settings = vscode.workspace.getConfiguration('makefmt', document.uri)
   return [
+    `align_across_comments = ${JSON.stringify(settings.get('alignAcrossComments'))}`,
     `align_assignments = ${JSON.stringify(settings.get('alignAssignments'))}`,
     `align_continuations = ${JSON.stringify(settings.get('alignContinuations'))}`,
     `indent_conditionals = ${JSON.stringify(settings.get('indentConditionals'))}`,
     `indent_width = ${JSON.stringify(settings.get('indentWidth'))}`,
+    `max_blank_lines = ${JSON.stringify(settings.get('maxBlankLines'))}`,
     `trim_trailing_whitespace = ${JSON.stringify(settings.get('trimTrailingWhitespace'))}`,
   ].join('\n')
 }

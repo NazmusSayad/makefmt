@@ -76,9 +76,11 @@ The plugin provides two languages, `makefmt/makefile` and `makefmt/justfile`, an
 | Option                   | Default | Description                                         |
 | ------------------------ | ------- | --------------------------------------------------- |
 | `alignAssignments`       | `true`  | Align assignment operators of consecutive variables |
+| `alignAcrossComments`    | `false` | Keep aligning across comment lines                  |
 | `alignContinuations`     | `true`  | Align trailing backslashes of continued lines       |
 | `indentConditionals`     | `true`  | Indent conditional blocks such as `ifeq`/`ifdef`    |
 | `indentWidth`            | `2`     | Spaces per indentation level                        |
+| `maxBlankLines`          | `1`     | Most consecutive blank lines to keep                |
 | `trimTrailingWhitespace` | `false` | Also trim trailing whitespace on assignment lines   |
 
 Make keeps trailing whitespace in a variable's value, so `PORT := 2184   ` sets `PORT` to `2184   `. makefmt leaves it alone unless you turn on trimming, which can change values that relied on it.
@@ -90,10 +92,12 @@ The options only apply to Makefiles. Justfiles always use the style of `just --f
 A `.makefmt.toml` in the Makefile's folder or any parent folder takes precedence over the rule options, so ESLint, the CLI and the VS Code extension all produce the same output:
 
 ```toml
+align_across_comments = false
 align_assignments = true
 align_continuations = true
 indent_conditionals = true
 indent_width = 4
+max_blank_lines = 1
 trim_trailing_whitespace = false
 ```
 

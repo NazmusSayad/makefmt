@@ -54,9 +54,11 @@ makefmt becomes the default formatter for Makefiles and justfiles once installed
 | Setting                          | Default | Description                                         |
 | -------------------------------- | ------- | --------------------------------------------------- |
 | `makefmt.alignAssignments`       | `true`  | Align assignment operators of consecutive variables |
+| `makefmt.alignAcrossComments`    | `false` | Keep aligning across comment lines                  |
 | `makefmt.alignContinuations`     | `true`  | Align trailing backslashes of continued lines       |
 | `makefmt.indentConditionals`     | `true`  | Indent conditional blocks such as `ifeq`/`ifdef`    |
 | `makefmt.indentWidth`            | `2`     | Spaces per indentation level                        |
+| `makefmt.maxBlankLines`          | `1`     | Most consecutive blank lines to keep                |
 | `makefmt.trimTrailingWhitespace` | `false` | Also trim trailing whitespace on assignment lines   |
 
 Make keeps trailing whitespace in a variable's value, so `PORT := 2184   ` sets `PORT` to `2184   `. makefmt leaves it alone unless you turn on trimming, which can change values that relied on it.
@@ -66,10 +68,12 @@ Make keeps trailing whitespace in a variable's value, so `PORT := 2184   ` sets 
 A `.makefmt.toml` in the Makefile's folder or any parent folder takes precedence over the settings above, so everyone on the project gets the same output:
 
 ```toml
+align_across_comments = false
 align_assignments = true
 align_continuations = true
 indent_conditionals = true
 indent_width = 4
+max_blank_lines = 1
 trim_trailing_whitespace = false
 ```
 
