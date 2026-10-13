@@ -180,7 +180,11 @@ ruleTester.run('format', makefmt.rules.format, {
       code: 'ifdef A\n\tifdef B\n\t\tX = 1\n\tendif\nendif\n',
       options: [{ indentWidth: 0 }],
     },
-    'all:\n\t  echo   "recipes are never touched"\n',
+    'all:\n\t  echo "recipes are formatted"\n',
+    {
+      code: 'all:\n\t  echo   "recipes are kept"\n',
+      options: [{ formatRecipes: false }],
+    },
     'define F\n  a  =  b\nendef\n',
     'PORT := 2184   \n',
     { code: 'PORT := 2184   \n', options: [{ trimTrailingWhitespace: false }] },
@@ -193,6 +197,11 @@ ruleTester.run('format', makefmt.rules.format, {
     { code: 'A = 1\n\n\nB = 2\n', options: [{ maxBlankLines: 2 }] },
   ],
   invalid: [
+    {
+      code: 'all:\n\techo   a  &&  echo b\n',
+      output: 'all:\n\techo a && echo b\n',
+      errors: [{ messageId: 'unformatted' }],
+    },
     {
       code: 'A = 1\n# c\nLONG = 2\n',
       options: [{ alignAcrossComments: true }],
@@ -497,7 +506,7 @@ ruleTester.run('format with .makefmt.toml', makefmt.rules.format, {
       errors: [
         {
           message:
-            'makefmt: TOML parse error at line 1, column 1\n  |\n1 | tab_width = 4\n  | ^^^^^^^^^\nunknown field `tab_width`, expected one of `align_across_comments`, `align_assignments`, `align_continuations`, `indent_conditionals`, `indent_width`, `max_blank_lines`, `trim_trailing_whitespace`\n',
+            'makefmt: TOML parse error at line 1, column 1\n  |\n1 | tab_width = 4\n  | ^^^^^^^^^\nunknown field `tab_width`, expected one of `align_across_comments`, `align_assignments`, `align_continuations`, `format_recipes`, `indent_conditionals`, `indent_width`, `max_blank_lines`, `trim_trailing_whitespace`\n',
         },
       ],
     },

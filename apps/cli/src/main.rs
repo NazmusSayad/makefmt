@@ -52,6 +52,12 @@ struct Cli {
         help = "Align line continuation backslashes"
     )]
     align_continuations: Option<bool>,
+    #[arg(
+        long,
+        value_name = "BOOL",
+        help = "Format recipe lines as shell scripts with shfmt rules"
+    )]
+    format_recipes: Option<bool>,
     #[arg(long, value_name = "BOOL", help = "Indent conditional blocks")]
     indent_conditionals: Option<bool>,
     #[arg(
@@ -275,6 +281,9 @@ fn load_options(directory: &Path, cli: &Cli) -> Result<Options, String> {
     }
     if let Some(align_continuations) = cli.align_continuations {
         options.align_continuations = align_continuations;
+    }
+    if let Some(format_recipes) = cli.format_recipes {
+        options.format_recipes = format_recipes;
     }
     if let Some(indent_conditionals) = cli.indent_conditionals {
         options.indent_conditionals = indent_conditionals;

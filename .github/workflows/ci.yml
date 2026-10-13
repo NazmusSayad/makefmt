@@ -23,7 +23,7 @@ jobs:
           node-version: 24
       - uses: taiki-e/install-action@v2
         with:
-          tool: just@1.58.0
+          tool: just@1.58.0,shfmt@3.14.1
       - working-directory: ${{ runner.temp }}
         run: |
           curl -fsSL https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz | tar xz

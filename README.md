@@ -44,7 +44,9 @@ all: $(SRCS:.c=.o) lib.a
 	$(CC) $(CFLAGS) -o app $^
 ```
 
-makefmt never changes what make does. Recipe lines and `define` bodies are left exactly as written, and anything it can't format safely stays as it is.
+makefmt never changes what make does. `define` bodies are left exactly as written, and anything it can't format safely stays as it is.
+
+Recipe lines are formatted as shell with the rules of [shfmt](https://github.com/mvdan/sh), as sh or, when `SHELL` is bash, as bash. Each formatted recipe is checked to hand the shell the same command as before. Recipes in `.ONESHELL` Makefiles or for other shells, and any recipe that can't be formatted safely, are left as they are. Set `format_recipes = false` to leave all recipes alone.
 
 The one thing it can't see is a `.RECIPEPREFIX` set outside the file, in an included Makefile, on the command line or in the environment. Set `.RECIPEPREFIX` in the Makefile that uses it.
 
@@ -81,6 +83,7 @@ With no paths, or `-`, makefmt formats stdin to stdout as a Makefile. Directorie
 | `--align-across-comments <BOOL>`    | Keep aligning across comment lines (default `false`)                |
 | `--align-assignments <BOOL>`        | Align `=`, `:=`, `?=`, `+=` (default `true`)                        |
 | `--align-continuations <BOOL>`      | Align trailing `\` (default `true`)                                 |
+| `--format-recipes <BOOL>`           | Format recipe lines as shell (default `true`)                       |
 | `--indent-conditionals <BOOL>`      | Indent `ifeq`/`ifdef` blocks (default `true`)                       |
 | `--trim-trailing-whitespace <BOOL>` | Also trim trailing whitespace on assignment lines (default `false`) |
 | `--language <LANGUAGE>`             | Format stdin and named files as `makefile` or `justfile`            |
@@ -95,13 +98,14 @@ Put a `.makefmt.toml` in your project. The CLI, the VS Code extension and the ES
 align_across_comments = false
 align_assignments = true
 align_continuations = true
+format_recipes = true
 indent_conditionals = true
 indent_width = 2
 max_blank_lines = 1
 trim_trailing_whitespace = false
 ```
 
-CLI flags override the file. In VS Code and ESLint, the file overrides the `makefmt.*` settings and rule options. These options only apply to Makefiles; justfiles always use the style of `just --fmt`.
+CLI flags override the file. In VS Code and ESLint, the file overrides the `makefmt.*` settings and rule options. These options only apply to Makefiles; justfiles always use the style of `just --fmt`. `indent_width` also sets the indentation inside recipes, where `0` means tabs.
 
 Trailing whitespace is removed everywhere except on variable assignments, because make keeps it as part of the value: `PORT := 2184   ` sets `PORT` to `2184   `, so `$(PORT)/db` becomes `2184   /db`. If that whitespace is never intended in your project, set `trim_trailing_whitespace = true`. Lines where trimming would change more than the value, such as one ending in `\   `, are still left alone.
 
@@ -116,7 +120,7 @@ pnpm lint
 pnpm test
 ```
 
-The tests compare against the real tools, so `pnpm test` needs [just](https://github.com/casey/just) 1.58.0 and GNU make 4.4 on `PATH`.
+The tests compare against the real tools, so `pnpm test` needs [just](https://github.com/casey/just) 1.58.0, [shfmt](https://github.com/mvdan/sh) 3.14.1 and GNU make 4.4 on `PATH`.
 
 | Path                 | What it is                                             |
 | -------------------- | ------------------------------------------------------ |

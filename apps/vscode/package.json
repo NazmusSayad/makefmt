@@ -1,7 +1,7 @@
 {
   "name": "makefmt",
   "displayName": "makefmt - Makefile & justfile Formatter",
-  "description": "Fast, safe Makefile and justfile formatter. Aligns assignments and line continuations, indents conditionals, never touches recipes, and formats justfiles like just --fmt.",
+  "description": "Fast, safe Makefile and justfile formatter. Aligns assignments and line continuations, indents conditionals, formats recipes as shell, and formats justfiles like just --fmt.",
   "version": "0.0.0",
   "publisher": "NazmusSayad",
   "icon": "icon.png",
@@ -88,6 +88,12 @@
           "default": true,
           "scope": "resource",
           "description": "Align the trailing backslashes of continued lines."
+        },
+        "makefmt.formatRecipes": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Format recipe lines as sh or bash with the rules of shfmt. Recipes that can't be formatted safely are left as they are."
         },
         "makefmt.indentConditionals": {
           "type": "boolean",

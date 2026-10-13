@@ -1,0 +1,6 @@
+SHELL := /usr/bin/env bash
+
+check:
+	@[[ -n "$$HOME" ]]  &&  echo   home
+	arr=( a  b  c ); echo "$${arr[@]}"
+	if [[ $$x == y* ]]; then echo  match ; fi

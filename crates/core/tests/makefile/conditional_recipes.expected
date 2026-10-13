@@ -8,5 +8,5 @@ endif
 	@echo done
 build: dep
 ifdef A
-	echo  a   b
+	echo a b
 endif

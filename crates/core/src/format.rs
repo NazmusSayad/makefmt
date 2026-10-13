@@ -1,3 +1,5 @@
+mod recipe;
+
 use crate::Options;
 
 const BLANKS: [char; 2] = [' ', '\t'];
@@ -12,6 +14,7 @@ const KEYWORDS: [&str; 11] = [
 enum Item<'a> {
     Blank,
     Raw(&'a str),
+    Recipe(String),
     Text {
         depth: usize,
         text: String,
@@ -55,12 +58,17 @@ fn format_source(source: &str, options: &Options) -> String {
     };
     let oneshell = source.contains(".ONESHELL");
     let posix = source.contains(".POSIX");
+    let lang = match options.format_recipes && !oneshell {
+        true => recipe::shell_lang(source),
+        false => None,
+    };
     let lines: Vec<&str> = source.lines().collect();
     let mut items = Vec::with_capacity(lines.len());
     let mut prefix = '\t';
     let mut depth = 0;
     let mut nest = 0;
     let mut hidden_conditional = false;
+    let mut in_rule = false;
     let mut i = 0;
     while i < lines.len() {
         let start = i;
@@ -110,6 +118,7 @@ fn format_source(source: &str, options: &Options) -> String {
                 items.extend(group.iter().map(|line| Item::Raw(line)));
                 continue;
             }
+            in_rule = false;
             let bail = needs_raw(group, first, prefix, false, posix);
             push_text(&mut items, depth, collapse_words(first), group, keep, bail);
             continue;
@@ -121,8 +130,19 @@ fn format_source(source: &str, options: &Options) -> String {
         }
 
         let assign = assignment(first);
+        let word = first_word(first);
 
         if recipe {
+            if in_rule
+                && let Some(lang) = lang
+                && !is_define(first)
+                && !CONDITIONALS.contains(&word)
+                && !matches!(word, "else" | "endif")
+                && let Some(lines) = recipe::format(group, prefix, lang, options.indent_width)
+            {
+                items.extend(lines.into_iter().map(Item::Recipe));
+                continue;
+            }
             let keep = keep || oneshell;
             for (k, line) in group.iter().enumerate() {
                 let text = if keep { line } else { trim_trailing(line) };
@@ -136,6 +156,16 @@ fn format_source(source: &str, options: &Options) -> String {
                 nest = 1;
             }
             continue;
+        }
+
+        if !first.starts_with('#')
+            && !CONDITIONALS.contains(&word)
+            && !matches!(word, "else" | "endif")
+        {
+            in_rule = assign.is_none()
+                && !is_define(first)
+                && !KEYWORDS.contains(&word)
+                && matches!(separator(first), Some((Sep::Rule, _, end)) if !first[end..].contains('='));
         }
 
         let bail = needs_raw(group, first, prefix, assign.is_some(), posix);
@@ -155,7 +185,6 @@ fn format_source(source: &str, options: &Options) -> String {
             continue;
         }
 
-        let word = first_word(first);
         let mut line_depth = depth;
         let text = if is_define(first) {
             nest = 1;
@@ -216,6 +245,10 @@ fn render(items: &[Item], eol: &str, options: &Options) -> String {
         match item {
             Item::Blank => {}
             Item::Raw(line) => {
+                out.push_str(line);
+                out.push_str(eol);
+            }
+            Item::Recipe(line) => {
                 out.push_str(line);
                 out.push_str(eol);
             }

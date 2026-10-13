@@ -23,6 +23,7 @@ interface FormatOptions {
   alignAcrossComments?: boolean
   alignAssignments?: boolean
   alignContinuations?: boolean
+  formatRecipes?: boolean
   indentConditionals?: boolean
   indentWidth?: number
   maxBlankLines?: number
@@ -130,6 +131,7 @@ const formatRule: RuleDefinition<{
           alignAcrossComments: { type: 'boolean' },
           alignAssignments: { type: 'boolean' },
           alignContinuations: { type: 'boolean' },
+          formatRecipes: { type: 'boolean' },
           indentConditionals: { type: 'boolean' },
           indentWidth: { type: 'integer', minimum: 0 },
           maxBlankLines: { type: 'integer', minimum: 1 },
@@ -221,6 +223,9 @@ function readConfig(filename: string, options: FormatOptions | undefined) {
   }
   if (options.alignContinuations !== undefined) {
     lines.push(`align_continuations = ${options.alignContinuations}`)
+  }
+  if (options.formatRecipes !== undefined) {
+    lines.push(`format_recipes = ${options.formatRecipes}`)
   }
   if (options.indentConditionals !== undefined) {
     lines.push(`indent_conditionals = ${options.indentConditionals}`)

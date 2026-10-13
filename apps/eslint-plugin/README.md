@@ -1,6 +1,6 @@
 # eslint-plugin-makefmt
 
-Format Makefiles and justfiles through ESLint with [makefmt](https://github.com/NazmusSayad/makefmt). Aligns assignments and line continuations, indents conditionals, and never touches recipes. Justfiles get the same output as `just --fmt`.
+Format Makefiles and justfiles through ESLint with [makefmt](https://github.com/NazmusSayad/makefmt). Aligns assignments and line continuations, indents conditionals, and formats recipes as shell with the rules of [shfmt](https://github.com/mvdan/sh). Justfiles get the same output as `just --fmt`.
 
 ```make
 CC=gcc
@@ -78,6 +78,7 @@ The plugin provides two languages, `makefmt/makefile` and `makefmt/justfile`, an
 | `alignAssignments`       | `true`  | Align assignment operators of consecutive variables |
 | `alignAcrossComments`    | `false` | Keep aligning across comment lines                  |
 | `alignContinuations`     | `true`  | Align trailing backslashes of continued lines       |
+| `formatRecipes`          | `true`  | Format recipe lines as shell with shfmt's rules     |
 | `indentConditionals`     | `true`  | Indent conditional blocks such as `ifeq`/`ifdef`    |
 | `indentWidth`            | `2`     | Spaces per indentation level                        |
 | `maxBlankLines`          | `1`     | Most consecutive blank lines to keep                |
@@ -95,6 +96,7 @@ A `.makefmt.toml` in the Makefile's folder or any parent folder takes precedence
 align_across_comments = false
 align_assignments = true
 align_continuations = true
+format_recipes = true
 indent_conditionals = true
 indent_width = 4
 max_blank_lines = 1

@@ -1,0 +1,35 @@
+CC ?= cc
+Q  ?= @
+
+.PHONY: all install
+all: build
+	@echo "building with $(CC)" >build.log
+	-rm -f *.o
+	@ echo spaced flags
+	$(Q)$(CC) -o $@ $^
+	for f in $(SRCS); do \
+	  echo $$f; \
+	done
+	if [ -f config ]; then echo yes; else echo no; fi
+	cmd --first \
+	  --second \
+	  --third
+	test -n "$(A)" && \
+	  echo ok
+	echo 'keep   \
+	this'
+	echo $$(($$x + 1))
+	echo   a # note \
+	echo  b
+	case $(A) in a) echo a ;; *) echo b ;; esac
+	{ \
+	  echo a; \
+	  echo b; \
+	} >/dev/null
+	echo   $(foo \
+	  bar)
+
+install:
+	install -m 644 app $(DESTDIR)$(PREFIX)/bin
+	if true; then   \
+	  echo  ok

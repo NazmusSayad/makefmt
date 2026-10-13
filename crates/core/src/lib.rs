@@ -1,5 +1,6 @@
 mod format;
 mod justfile;
+pub mod shfmt;
 
 use std::num::NonZeroUsize;
 
@@ -14,6 +15,7 @@ pub struct Options {
     pub align_across_comments: bool,
     pub align_assignments: bool,
     pub align_continuations: bool,
+    pub format_recipes: bool,
     pub indent_conditionals: bool,
     pub indent_width: usize,
     pub max_blank_lines: NonZeroUsize,
@@ -26,6 +28,7 @@ impl Default for Options {
             align_across_comments: false,
             align_assignments: true,
             align_continuations: true,
+            format_recipes: true,
             indent_conditionals: true,
             indent_width: 2,
             max_blank_lines: NonZeroUsize::MIN,

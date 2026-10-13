@@ -5,6 +5,7 @@ use std::process::Command;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use libtest_mimic::{Arguments, Failed, Trial};
+use makefmt::shfmt::{self, Lang};
 use makefmt::{Options, format};
 
 const GENERATED_FILES: u64 = 700;
@@ -116,7 +117,15 @@ const PREREQS: [&str; 10] = [
     "$$(SECOND)",
 ];
 const PATTERNS: [&str; 4] = ["%.o", "build/%.x", "%.d", "all"];
-const COMMANDS: [&str; 16] = [
+const COMMANDS: [&str; 24] = [
+    "if [ -f x ]; then  echo  y; fi",
+    "for f in a b; do echo $$f; done",
+    "test -n \"$(A)\"  ||  exit 1",
+    "echo   $$(( 1+2 ))",
+    "case $(A) in a) echo a;; *) echo b;; esac",
+    "$(Q)echo  quiet",
+    "{ echo a;  echo b; }  >  /dev/null",
+    "echo a |  tr a b",
     "echo hi",
     "@echo $@",
     "-rm -f x",
@@ -287,7 +296,29 @@ const LINE_ENDING_CASES: [(&str, &str, &str); 16] = [
         "\u{FEFF}\u{FEFF}X   := 1\nLONG := 2\n",
     ),
 ];
-const UNCHANGED_CASES: [(&str, &str); 10] = [
+const UNCHANGED_CASES: [(&str, &str); 17] = [
+    (
+        "recipes_other_shell",
+        "SHELL = /bin/dash\nall:\n\techo   a\n",
+    ),
+    (
+        "recipes_mixed_shells",
+        "SHELL = /bin/sh\nall: SHELL = /bin/bash\nall:\n\techo   a\n",
+    ),
+    (
+        "recipes_shell_reference",
+        "SHELL = $(firstword /bin/sh)\nall:\n\techo   a\n",
+    ),
+    ("recipes_shell_append", "SHELL += -e\nall:\n\techo   a\n"),
+    (
+        "recipes_oneshell",
+        ".ONESHELL:\nall:\n\tif true; then\n\t  echo   a\n\tfi\n",
+    ),
+    ("recipes_conditional_word", "all:\n\tifeq   (a,b)\n"),
+    (
+        "recipes_comment_continuation",
+        "all:\n\techo   a # note \\\n\techo  b\n",
+    ),
     (
         "recipe_prefix_in_false_conditional",
         "ifdef MAKEFMT_UNDEFINED\n.RECIPEPREFIX = >\nendif\nall:\n\t@echo   hi\nA=1\n",
@@ -990,12 +1021,13 @@ fn soup(seed: u64) -> String {
 
 fn option_matrix() -> Vec<Options> {
     let mut all = Vec::new();
-    for bits in 0..32 {
+    for bits in 0..64 {
         for (indent_width, max_blank_lines) in LAYOUTS {
             all.push(Options {
                 align_across_comments: bits & 16 != 0,
                 align_assignments: bits & 1 != 0,
                 align_continuations: bits & 2 != 0,
+                format_recipes: bits & 32 != 0,
                 indent_conditionals: bits & 4 != 0,
                 indent_width,
                 max_blank_lines: NonZeroUsize::new(max_blank_lines)
@@ -1009,10 +1041,11 @@ fn option_matrix() -> Vec<Options> {
 
 fn label(options: &Options) -> String {
     format!(
-        "align_across_comments={},align_assignments={},align_continuations={},indent_conditionals={},indent_width={},max_blank_lines={},trim_trailing_whitespace={}",
+        "align_across_comments={},align_assignments={},align_continuations={},format_recipes={},indent_conditionals={},indent_width={},max_blank_lines={},trim_trailing_whitespace={}",
         options.align_across_comments,
         options.align_assignments,
         options.align_continuations,
+        options.format_recipes,
         options.indent_conditionals,
         options.indent_width,
         options.max_blank_lines,
@@ -1173,6 +1206,7 @@ fn check_case(source: &str, options: &Options, kept: &[Kept]) -> Result<(), Fail
     let mut lines = output.lines();
     for item in kept {
         let found = match item {
+            Kept::Recipe(_) if options.format_recipes => continue,
             Kept::Recipe(line) => {
                 lines.any(|out| out.trim_end_matches(BLANKS) == line.trim_end_matches(BLANKS))
             }
@@ -1199,7 +1233,7 @@ fn check_case(source: &str, options: &Options, kept: &[Kept]) -> Result<(), Fail
         );
         return check_only_trimmed(source, &untrimmed, &output);
     }
-    let (before, after) = make_databases(source, &output)?;
+    let (before, after) = make_databases(source, &output, options.format_recipes)?;
     if before != after {
         return Err(format!(
             "make database changed\n{}\n--- input ---\n{source}\n--- output ---\n{output}\n--- input (escaped) ---\n{source:?}",
@@ -1246,7 +1280,7 @@ fn first_difference(a: &str, b: &str) -> String {
     )
 }
 
-fn make_databases(source: &str, output: &str) -> Result<(String, String), Failed> {
+fn make_databases(source: &str, output: &str, shell: bool) -> Result<(String, String), Failed> {
     static COUNTER: AtomicUsize = AtomicUsize::new(0);
     let dir = std::env::temp_dir().join(format!(
         "makefmt-tests-{}-{}",
@@ -1254,8 +1288,8 @@ fn make_databases(source: &str, output: &str) -> Result<(String, String), Failed
         COUNTER.fetch_add(1, Ordering::Relaxed)
     ));
     fs::create_dir_all(&dir)?;
-    let before = make_database(&dir, source);
-    let after = make_database(&dir, output);
+    let before = make_database(&dir, source, shell);
+    let after = make_database(&dir, output, shell);
     fs::remove_dir_all(&dir)?;
     let (before, status) = before?;
     if !status {
@@ -1264,7 +1298,7 @@ fn make_databases(source: &str, output: &str) -> Result<(String, String), Failed
     Ok((before, after?.0))
 }
 
-fn make_database(dir: &Path, source: &str) -> Result<(String, bool), Failed> {
+fn make_database(dir: &Path, source: &str, shell: bool) -> Result<(String, bool), Failed> {
     fs::write(dir.join("common.mk"), "")?;
     fs::write(dir.join("dump.mk"), "__dump__: ; @env | LC_ALL=C sort\n")?;
     fs::write(dir.join("Makefile"), source)?;
@@ -1293,10 +1327,10 @@ fn make_database(dir: &Path, source: &str) -> Result<(String, bool), Failed> {
     text.push_str("--- stderr ---\n");
     text.push_str(&String::from_utf8_lossy(&output.stderr));
     text.push_str(&format!("--- status {} ---\n", output.status));
-    Ok((normalize(&text), output.status.success()))
+    Ok((normalize(&text, source, shell), output.status.success()))
 }
 
-fn normalize(text: &str) -> String {
+fn normalize(text: &str, source: &str, shell: bool) -> String {
     let ignored = [
         "# Make data base, printed on",
         "# Finished Make data base on",
@@ -1307,10 +1341,21 @@ fn normalize(text: &str) -> String {
     ];
     let mut out = String::new();
     let mut recipe = false;
+    let mut prefix = '\t';
+    let mut logical: Vec<&str> = Vec::new();
     for line in text.lines() {
         if ignored.iter().any(|prefix| line.starts_with(prefix))
             || line.contains("hash-table stats")
         {
+            continue;
+        }
+        if recipe && shell && !line.is_empty() {
+            logical.push(line);
+            if !continued(line) {
+                out.push_str(&canonical_recipe(&logical, prefix));
+                out.push('\n');
+                logical.clear();
+            }
             continue;
         }
         if recipe && !line.is_empty() {
@@ -1321,6 +1366,9 @@ fn normalize(text: &str) -> String {
             continue;
         }
         recipe = line.starts_with("#  recipe to execute");
+        if recipe {
+            prefix = recipe_prefix(line, source);
+        }
         out.push_str(&strip_locations(line));
         out.push('\n');
     }
@@ -1347,4 +1395,95 @@ fn strip_locations(line: &str) -> String {
     }
     out.push_str(rest);
     out
+}
+
+fn continued(line: &str) -> bool {
+    (line.len() - line.trim_end_matches('\\').len()) % 2 == 1
+}
+
+fn recipe_prefix(line: &str, source: &str) -> char {
+    let location = line
+        .strip_prefix("#  recipe to execute (from '")
+        .and_then(|rest| rest.strip_suffix("):"))
+        .unwrap_or_else(|| panic!("unexpected recipe header {line:?}"));
+    let (file, number) = location
+        .split_once("', line ")
+        .unwrap_or_else(|| panic!("unexpected recipe location {location:?}"));
+    match file {
+        "Makefile" => {
+            let number: usize = number.parse().expect("recipe line number");
+            source
+                .lines()
+                .nth(number - 1)
+                .and_then(|line| line.chars().next())
+                .expect("recipe line exists in the Makefile")
+        }
+        "dump.mk" => '\t',
+        _ => panic!("unexpected recipe file {file:?}"),
+    }
+}
+
+fn canonical_recipe(lines: &[&str], prefix: char) -> String {
+    let mut chars = lines[0].chars();
+    let Some(printed) = chars.next() else {
+        unreachable!("make prints recipe lines with the recipe prefix");
+    };
+    let first = chars.as_str();
+    let body = first.trim_start_matches([' ', '\t', '@', '-', '+']);
+    let flags: String = first[..first.len() - body.len()]
+        .chars()
+        .filter(|c| !BLANKS.contains(c))
+        .collect();
+    let mut text = body.to_string();
+    for line in &lines[1..] {
+        text.push('\n');
+        text.push_str(line.strip_prefix(prefix).unwrap_or(line));
+    }
+    let Some((shell, refs)) = shell_text(&text) else {
+        return format!("{printed}{flags} raw {:?}", text.trim_matches(BLANKS));
+    };
+    match shfmt::format(&shell, Lang::Bash, 0) {
+        Ok(formatted) => format!("{printed}{flags} shell {formatted:?} {refs:?}"),
+        Err(_) => format!("{printed}{flags} raw {:?}", text.trim_matches(BLANKS)),
+    }
+}
+
+fn shell_text(text: &str) -> Option<(String, Vec<String>)> {
+    let mut shell = String::new();
+    let mut refs = Vec::new();
+    let mut chars = text.chars();
+    while let Some(c) = chars.next() {
+        if c != '$' {
+            shell.push(c);
+            continue;
+        }
+        let next = chars.next()?;
+        let mut reference = format!("${next}");
+        match next {
+            '$' => {
+                shell.push('$');
+                continue;
+            }
+            '(' | '{' => {
+                let close = if next == '(' { ')' } else { '}' };
+                let mut depth = 1;
+                while depth > 0 {
+                    let c = chars.next()?;
+                    if c == next {
+                        depth += 1;
+                    } else if c == close {
+                        depth -= 1;
+                    } else if c == '\n' {
+                        return None;
+                    }
+                    reference.push(c);
+                }
+            }
+            ' ' | '\t' | '\n' | '\\' => return None,
+            _ => {}
+        }
+        shell.push_str(&format!("__ref{}__", refs.len()));
+        refs.push(reference);
+    }
+    Some((shell, refs))
 }

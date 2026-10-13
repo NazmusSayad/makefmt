@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-makefmt",
   "version": "0.0.0",
-  "description": "ESLint plugin that formats Makefiles and justfiles with makefmt. Aligns assignments and line continuations, indents conditionals, and never touches recipes.",
+  "description": "ESLint plugin that formats Makefiles and justfiles with makefmt. Aligns assignments and line continuations, indents conditionals, and formats recipes as shell.",
   "keywords": [
     "eslint",
     "eslintplugin",

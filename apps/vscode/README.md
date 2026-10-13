@@ -1,6 +1,6 @@
 # makefmt
 
-Fast, safe Makefile and justfile formatter. Aligns assignments and line continuations and indents conditional blocks.
+Fast, safe Makefile and justfile formatter. Aligns assignments and line continuations, indents conditional blocks and formats recipes as shell with the rules of [shfmt](https://github.com/mvdan/sh).
 
 ```make
 CC=gcc
@@ -28,7 +28,7 @@ all: main.o util.o
 	$(CC) $(CFLAGS) -o app $^
 ```
 
-makefmt never changes what make does. Recipe lines and `define` bodies are left exactly as written.
+makefmt never changes what make does. `define` bodies are left exactly as written, and recipes are formatted as sh or bash only when the shell gets the same command as before.
 
 Justfiles get the same output as `just --fmt`, without needing `just` installed.
 
@@ -56,6 +56,7 @@ makefmt becomes the default formatter for Makefiles and justfiles once installed
 | `makefmt.alignAssignments`       | `true`  | Align assignment operators of consecutive variables |
 | `makefmt.alignAcrossComments`    | `false` | Keep aligning across comment lines                  |
 | `makefmt.alignContinuations`     | `true`  | Align trailing backslashes of continued lines       |
+| `makefmt.formatRecipes`          | `true`  | Format recipe lines as shell with shfmt's rules     |
 | `makefmt.indentConditionals`     | `true`  | Indent conditional blocks such as `ifeq`/`ifdef`    |
 | `makefmt.indentWidth`            | `2`     | Spaces per indentation level                        |
 | `makefmt.maxBlankLines`          | `1`     | Most consecutive blank lines to keep                |
@@ -71,6 +72,7 @@ A `.makefmt.toml` in the Makefile's folder or any parent folder takes precedence
 align_across_comments = false
 align_assignments = true
 align_continuations = true
+format_recipes = true
 indent_conditionals = true
 indent_width = 4
 max_blank_lines = 1

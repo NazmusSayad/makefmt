@@ -10,7 +10,7 @@ const manifest = {
   version: '0.0.0',
   type: 'module',
   description:
-    'Fast, safe Makefile and justfile formatter. Aligns assignments and line continuations, indents conditionals, never touches recipes, and formats justfiles like just --fmt.',
+    'Fast, safe Makefile and justfile formatter. Aligns assignments and line continuations, indents conditionals, formats recipes as shell, and formats justfiles like just --fmt.',
   keywords: [
     'makefile',
     'make',
