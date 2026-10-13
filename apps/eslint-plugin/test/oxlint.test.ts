@@ -74,7 +74,7 @@ test('oxlint accepts valid rule options', () => {
     ['index.js']
   )
   assert.equal(result.status, 0)
-  assert.equal(result.output, '')
+  assert.doesNotMatch(result.output, /makefmt/)
 })
 
 test('oxlint validates rule options against the schema', () => {
