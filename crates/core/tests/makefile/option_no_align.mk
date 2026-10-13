@@ -1,0 +1,21 @@
+A = 1
+LONGER_NAME := 2
+B ?= 3
+
+C = 4
+MUCH_LONGER_NAME_HERE = 5
+# a comment breaks the group
+D = 6
+E_LONG := 7
+all: x
+F = 8
+GG = 9
+ifdef A
+X = 1
+YYYYYY = 2
+ifdef B
+Z = 3
+ZZZZZZZZZZ = 4
+endif
+W = 5
+endif

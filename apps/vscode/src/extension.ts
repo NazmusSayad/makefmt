@@ -1,33 +1,38 @@
+import { loadFormatter } from '@makefmt/wasm'
 import * as vscode from 'vscode'
-import { loadFormatter } from './load-formatter'
 
 export async function activate(context: vscode.ExtensionContext) {
   const wasm = await vscode.workspace.fs.readFile(
     vscode.Uri.joinPath(context.extensionUri, 'dist', 'makefmt.wasm')
   )
-  const format = await loadFormatter(wasm)
+  const format = loadFormatter(wasm)
 
-  context.subscriptions.push(
-    vscode.languages.registerDocumentFormattingEditProvider('makefile', {
-      async provideDocumentFormattingEdits(document) {
-        try {
-          const config = await readConfig(document)
-          const text = document.getText()
-          const formatted = format(text, config)
-          if (formatted === text) return []
-          const range = new vscode.Range(
-            document.positionAt(0),
-            document.positionAt(text.length)
-          )
-          return [vscode.TextEdit.replace(range, formatted)]
-        } catch (error) {
-          if (!(error instanceof Error)) throw error
-          void vscode.window.showErrorMessage(`makefmt: ${error.message}`)
-          return []
-        }
-      },
-    })
-  )
+  const languages = { makefile: 'makefile', just: 'justfile' } as const
+
+  for (const [languageId, language] of Object.entries(languages)) {
+    context.subscriptions.push(
+      vscode.languages.registerDocumentFormattingEditProvider(languageId, {
+        async provideDocumentFormattingEdits(document) {
+          try {
+            const config =
+              language === 'makefile' ? await readConfig(document) : ''
+            const text = document.getText()
+            const formatted = format(text, config, language)
+            if (formatted === text) return []
+            const range = new vscode.Range(
+              document.positionAt(0),
+              document.positionAt(text.length)
+            )
+            return [vscode.TextEdit.replace(range, formatted)]
+          } catch (error) {
+            if (!(error instanceof Error)) throw error
+            void vscode.window.showErrorMessage(`makefmt: ${error.message}`)
+            return []
+          }
+        },
+      })
+    )
+  }
 }
 
 async function readConfig(document: vscode.TextDocument) {

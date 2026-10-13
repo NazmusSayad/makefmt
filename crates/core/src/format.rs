@@ -3,7 +3,7 @@ use crate::Options;
 const BLANKS: [char; 2] = [' ', '\t'];
 const WORD_ENDS: [char; 3] = [' ', '\t', '#'];
 const CONDITIONALS: [&str; 4] = ["ifeq", "ifneq", "ifdef", "ifndef"];
-const MODIFIERS: [&str; 3] = ["override", "export", "private"];
+const MODIFIERS: [&str; 4] = ["override", "export", "unexport", "private"];
 const KEYWORDS: [&str; 11] = [
     "include", "-include", "sinclude", "vpath", "export", "unexport", "undefine", "override",
     "private", "load", "-load",
@@ -39,6 +39,16 @@ struct Assignment<'a> {
 }
 
 pub fn format(source: &str, options: &Options) -> String {
+    match source.strip_prefix('\u{FEFF}') {
+        Some(rest) => format!("\u{FEFF}{}", format_source(rest, options)),
+        None => format_source(source, options),
+    }
+}
+
+fn format_source(source: &str, options: &Options) -> String {
+    if source.replace("\r\n", "\n").contains('\r') {
+        return source.to_string();
+    }
     let eol = match source.find('\n') {
         Some(i) if source[..i].ends_with('\r') => "\r\n",
         _ => "\n",
@@ -50,6 +60,7 @@ pub fn format(source: &str, options: &Options) -> String {
     let mut prefix = '\t';
     let mut depth = 0;
     let mut nest = 0;
+    let mut hidden_conditional = false;
     let mut i = 0;
     while i < lines.len() {
         let start = i;
@@ -72,6 +83,21 @@ pub fn format(source: &str, options: &Options) -> String {
         } else {
             trim_trailing(head)
         };
+
+        if (recipe || nest > 0) && CONDITIONALS.contains(&first_word(first)) {
+            hidden_conditional = true;
+        }
+        if group.iter().any(|line| line.contains(".RECIPEPREFIX"))
+            && (recipe || nest > 0 || !first.starts_with('#'))
+        {
+            if recipe || nest > 0 || depth > 0 || hidden_conditional || group.len() > 1 {
+                return source.to_string();
+            }
+            let Some(next) = static_prefix(first) else {
+                return source.to_string();
+            };
+            prefix = next;
+        }
 
         if nest > 0 {
             if !recipe && starts_word(first, "define") {
@@ -115,12 +141,6 @@ pub fn format(source: &str, options: &Options) -> String {
         let bail = needs_raw(group, first, prefix, assign.is_some(), posix);
 
         if let Some(assign) = assign {
-            if assign.name == ".RECIPEPREFIX" || assign.name.ends_with(" .RECIPEPREFIX") {
-                prefix = match assign.value.chars().next() {
-                    None | Some('#') => '\t',
-                    Some(c) => c,
-                };
-            }
             if bail {
                 push_raw(&mut items, group, keep);
             } else {
@@ -150,7 +170,10 @@ pub fn format(source: &str, options: &Options) -> String {
                 depth += 1;
             }
             directive(first)
-        } else if first.starts_with('#') {
+        } else if first.starts_with('#')
+            || (matches!(word, "override" | "private")
+                && matches!(separator(first), Some((Sep::Rule, ..))))
+        {
             first.to_string()
         } else if KEYWORDS.contains(&word) {
             collapse_words(first)
@@ -335,6 +358,9 @@ fn needs_raw(group: &[&str], first: &str, prefix: char, assign: bool, posix: boo
             content.ends_with('$') || content.ends_with('\\')
         })
         || (group.len() > 1 && !assign && group.iter().any(|line| line.contains(';')))
+        || group
+            .iter()
+            .any(|line| line.contains("\\=") || line.contains("\\:") || line.contains("\\&"))
         || first.starts_with(prefix)
 }
 
@@ -356,7 +382,7 @@ fn continued_content(line: &str) -> &str {
 
 fn trim_trailing(line: &str) -> &str {
     let trimmed = line.trim_end_matches(BLANKS);
-    if trimmed.ends_with('\\') {
+    if trimmed.ends_with(['\\', '$']) {
         line
     } else {
         trimmed
@@ -398,7 +424,7 @@ fn scan(s: &str, mut stop: impl FnMut(usize) -> bool) -> usize {
     let mut i = 0;
     while i < bytes.len() {
         match bytes[i] {
-            b'\\' => i += 2,
+            b'\\' if bytes.get(i + 1) != Some(&b'$') => i += 2,
             b'#' => return i,
             b'$' => {
                 if matches!(bytes.get(i + 1), Some(b'(' | b'{')) {
@@ -515,7 +541,7 @@ fn push_word(out: &mut String, word: &str) {
 fn rule(s: &str, start: usize, end: usize) -> String {
     let mut out = collapse_words(&s[..start]);
     let sep = &s[start..end];
-    if sep.starts_with('&') && !out.is_empty() {
+    if (sep.starts_with('&') || out.ends_with('&')) && !out.is_empty() {
         out.push(' ');
     }
     out.push_str(sep);
@@ -533,12 +559,16 @@ fn rule(s: &str, start: usize, end: usize) -> String {
         push_assignment(&mut out, &assign.name, 0, assign.op, assign.value);
         return out;
     }
-    if let Some((Sep::Rule, inner_start, inner_end)) = inner {
+    if let Some((Sep::Rule, ..)) = inner {
+        let bytes = before.as_bytes();
+        let colon = scan(before, |i| bytes[i] == b':');
         out.push(' ');
-        out.push_str(&rule(rest, inner_start, inner_end));
-        return out;
+        out.push_str(&prerequisites(&before[..colon]));
+        out.push(':');
+        push_word(&mut out, &prerequisites(&before[colon + 1..]));
+    } else {
+        push_word(&mut out, &prerequisites(before));
     }
-    push_word(&mut out, &collapse_words(before));
     if let Some(p) = semicolon {
         out.push(';');
         let after = trim_trailing(rest[p + 1..].trim_start_matches(BLANKS));
@@ -548,4 +578,26 @@ fn rule(s: &str, start: usize, end: usize) -> String {
         }
     }
     out
+}
+
+fn prerequisites(s: &str) -> String {
+    if s.contains(['"', '\'']) || s.contains("$$") {
+        return trim_trailing(s.trim_start_matches(BLANKS)).to_string();
+    }
+    collapse_words(s)
+}
+
+fn static_prefix(first: &str) -> Option<char> {
+    let assign = assignment(first)?;
+    if assign.name != ".RECIPEPREFIX" && !assign.name.ends_with(" .RECIPEPREFIX") {
+        return None;
+    }
+    if !matches!(assign.op, "=" | ":=" | "::=" | ":::=") || assign.value.contains(['$', '\\']) {
+        return None;
+    }
+    match assign.value.chars().next() {
+        None | Some('#') => Some('\t'),
+        Some(c) if c.is_ascii() => Some(c),
+        Some(_) => None,
+    }
 }

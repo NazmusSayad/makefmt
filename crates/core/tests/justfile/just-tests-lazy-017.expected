@@ -1,0 +1,7 @@
+set lazy
+
+x := 'bar'
+eager e := x
+
+foo:
+    @echo baz

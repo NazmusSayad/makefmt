@@ -1,0 +1,4 @@
+set dotenv-load
+set dotenv-override
+echo:
+    echo $DOTENV_KEY

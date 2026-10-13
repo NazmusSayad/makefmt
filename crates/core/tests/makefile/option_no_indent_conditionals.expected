@@ -1,0 +1,26 @@
+A = 1
+ifeq ($(A),1)
+B = yes
+ifdef B
+C = nested
+ifndef MISSING
+D = deep
+else
+D = other
+endif
+endif
+else ifeq ($(A),2)
+B = two
+else ifneq ($(A),3)
+B = not three
+else
+B = no
+endif
+ifdef A
+E = 1
+endif # trailing comment
+ifndef Z
+F = 2
+else
+F = 3
+endif

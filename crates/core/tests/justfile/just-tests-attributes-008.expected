@@ -1,0 +1,5 @@
+[metadata('example')]
+[metadata('sample')]
+[no-exit-message]
+foo:
+    exit 1

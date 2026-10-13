@@ -63,5 +63,18 @@ export default defineConfig({
         ],
       },
     },
+    {
+      files: ['apps/eslint-plugin/src/index.ts'],
+      rules: {
+        'no-empty-function': 'off',
+        'import/no-default-export': 'off',
+      },
+    },
+    {
+      files: ['apps/eslint-plugin/test/**'],
+      rules: {
+        'typescript/no-floating-promises': 'off',
+      },
+    },
   ],
 })

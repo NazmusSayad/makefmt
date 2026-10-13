@@ -1,0 +1,5 @@
+error: option name for parameter `a` starts with dash
+ ——▶ justfile:1:16
+  │
+1 │ [arg("a", long="-a")]
+  │                ^^^^

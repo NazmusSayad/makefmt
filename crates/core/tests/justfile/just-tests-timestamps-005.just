@@ -1,0 +1,3 @@
+[timestamp('%H:%M:%S%.3f')]
+recipe:
+  echo foo

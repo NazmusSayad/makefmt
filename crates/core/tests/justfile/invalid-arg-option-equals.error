@@ -1,0 +1,5 @@
+error: option name for parameter `a` contains equal sign
+ ——▶ justfile:1:16
+  │
+1 │ [arg("a", long="a=b")]
+  │                ^^^^^

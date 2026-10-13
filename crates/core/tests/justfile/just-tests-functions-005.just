@@ -1,0 +1,8 @@
+we  := without_extension('/foo/bar/baz')
+fs  := file_stem('/foo/bar/baz.hello.ciao')
+fn  := file_name('/bar/baz.hello.ciao')
+dir := parent_directory('/foo/')
+ext := extension('/foo/bar/baz.hello.ciao')
+
+foo:
+  /usr/bin/env echo '{{we}}' '{{fs}}' '{{fn}}' '{{dir}}' '{{ext}}'

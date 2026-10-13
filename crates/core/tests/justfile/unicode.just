@@ -1,0 +1,7 @@
+# ünïcödé ✓ 日本語
+var := "héllo wörld 🎉"
+raw := 'ñ'
+
+# 説明
+recipe arg="ü":
+  echo "{{ var }} {{arg}} ✓"

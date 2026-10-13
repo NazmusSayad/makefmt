@@ -1,0 +1,7 @@
+[working-directory("sub")]
+a:
+    pwd
+
+[working-directory('other')]
+b:
+    pwd

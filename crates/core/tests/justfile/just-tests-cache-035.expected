@@ -1,0 +1,5 @@
+[cache]
+[no-cd]
+[script]
+foo:
+    echo bar

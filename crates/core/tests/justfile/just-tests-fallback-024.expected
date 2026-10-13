@@ -1,0 +1,4 @@
+set fallback
+
+bar:
+    echo subdir

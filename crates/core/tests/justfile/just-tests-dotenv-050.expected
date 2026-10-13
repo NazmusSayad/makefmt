@@ -1,0 +1,5 @@
+set dotenv-command := 'echo KEY=command'
+set dotenv-override
+
+@foo:
+    echo $KEY

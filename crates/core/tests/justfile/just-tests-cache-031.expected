@@ -1,0 +1,6 @@
+[cache(outputs='foo')]
+[script]
+[working-directory('sub')]
+bar:
+    echo bar
+    touch foo

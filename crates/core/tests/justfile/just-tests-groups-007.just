@@ -1,0 +1,7 @@
+[group('B')]
+bar:
+
+[group('A')]
+[group('B')]
+foo:
+

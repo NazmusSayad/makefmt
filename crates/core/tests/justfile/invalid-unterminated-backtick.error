@@ -1,0 +1,5 @@
+error: unterminated backtick
+ ——▶ justfile:1:6
+  │
+1 │ a := `abc
+  │      ^

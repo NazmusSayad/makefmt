@@ -1,6 +1,6 @@
 # makefmt
 
-Fast, safe Makefile formatter. Aligns assignments and line continuations and indents conditional blocks.
+Fast, safe Makefile and justfile formatter. Aligns assignments and line continuations and indents conditional blocks.
 
 ```make
 CC=gcc
@@ -30,15 +30,20 @@ all: main.o util.o
 
 makefmt never changes what make does. Recipe lines and `define` bodies are left exactly as written.
 
+Justfiles get the same output as `just --fmt`, without needing `just` installed.
+
 The formatter is written in Rust and runs inside VS Code as WebAssembly, so formatting is instant and works on vscode.dev too.
 
 ## Usage
 
-makefmt becomes the default formatter for Makefiles once installed. Run **Format Document** (`Shift+Alt+F`), or format on save:
+makefmt becomes the default formatter for Makefiles and justfiles once installed. Files named `justfile`, `Justfile`, `.justfile` or `*.just` are recognized as justfiles. Run **Format Document** (`Shift+Alt+F`), or format on save:
 
 ```json
 {
   "[makefile]": {
+    "editor.formatOnSave": true
+  },
+  "[just]": {
     "editor.formatOnSave": true
   }
 }
@@ -64,7 +69,7 @@ indent_conditionals = true
 indent_width = 4
 ```
 
-Missing keys use the defaults. Unknown keys are an error.
+Missing keys use the defaults. Unknown keys are an error. The settings and the file only apply to Makefiles; justfiles always use the style of `just --fmt`.
 
 ## CLI
 

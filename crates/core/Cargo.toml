@@ -12,3 +12,14 @@ toml = { version = "1.1.8", default-features = false, features = [
   "parse",
   "serde",
 ] }
+
+[dev-dependencies]
+libtest-mimic = "0.8.2"
+
+[[test]]
+name = "makefile"
+harness = false
+
+[[test]]
+name = "justfile"
+harness = false

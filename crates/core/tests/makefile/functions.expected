@@ -1,0 +1,13 @@
+define TEMPLATE
+$(1)_obj := $(1).o
+$(1): ; @echo $(1)
+endef
+$(foreach t,a b,$(eval $(call TEMPLATE,$(t))))
+$(eval X := 1)
+$(eval $(subst :,=,K:1))
+$(info A=$(A))
+SRC := a.c b.c
+OBJ := $(SRC:%.c=%.o)
+$(OBJ:.o=.d): %.d: %.c
+$(patsubst %.c,%.o,m.c): x
+$(subst =,-,k=v): y

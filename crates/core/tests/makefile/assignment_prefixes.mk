@@ -1,0 +1,12 @@
+export A = 1
+unexport B = 2
+override C := 3
+private D ?= 4
+override export E += 5
+export   override   F = 6
+private export G = 7
+override private H = 8
+unexport override I = 9
+override unexport J = 10
+private export override K = 11
+export	L	=	12

@@ -1,0 +1,5 @@
+set no-exit-message
+
+default:
+  #!/usr/bin/env sh
+  kill -TERM $$

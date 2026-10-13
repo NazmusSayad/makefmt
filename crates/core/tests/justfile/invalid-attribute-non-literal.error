@@ -1,0 +1,5 @@
+error: attribute `group` arguments must be string literals
+ ——▶ justfile:1:8
+  │
+1 │ [group("a" + "b")]
+  │        ^^^

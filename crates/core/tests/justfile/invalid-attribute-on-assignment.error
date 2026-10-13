@@ -1,0 +1,5 @@
+error: assignment `a` has invalid attribute `no-cd`
+ ——▶ justfile:2:1
+  │
+2 │ a := "1"
+  │ ^

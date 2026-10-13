@@ -1,0 +1,9 @@
+set dotenv-filename := ".env.local"
+set dotenv-path := ".env"
+set dotenv-command := "cat .env"
+set tempdir := "/tmp"
+set working-directory := 'sub'
+set minimum-version := "1.0.0"
+set script-interpreter := ['bash', '-eu']
+set shell := ["bash", "-uc"]
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]

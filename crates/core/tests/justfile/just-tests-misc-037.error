@@ -1,0 +1,5 @@
+error: unknown start of token '^'
+  ——▶ justfile:10:1
+   │
+10 │ ^^^
+   │ ^

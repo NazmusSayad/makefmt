@@ -1,0 +1,20 @@
+s1.o s2.o: %.o: %.c
+	cc -c $<
+s3.o  s4.o :  %.o  :  %.c   | dirs
+%.o: %.c
+	cc $<
+build/%.x:src/%.y
+dc1:: a
+	echo first
+dc1 :: b
+	echo second
+g1 g2 &: src
+	touch g1 g2
+g3 g4&:src
+	touch g3 g4
+g5 g6 &:: src
+	touch g5 g6
+order: normal | only
+inline: dep ; @echo inline  
+inline2:;@echo no space
+inline3 : a b;echo x;echo y

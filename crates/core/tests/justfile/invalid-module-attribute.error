@@ -1,0 +1,5 @@
+error: module `m` has invalid attribute `no-cd`
+ ——▶ justfile:2:6
+  │
+2 │ mod? m
+  │      ^

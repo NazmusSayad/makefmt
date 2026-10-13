@@ -1,0 +1,2 @@
+[confirm(foo())]
+bar:

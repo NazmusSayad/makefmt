@@ -1,0 +1,5 @@
+[cache]
+[extension('.aaa')]
+[script]
+foo:
+    echo bar

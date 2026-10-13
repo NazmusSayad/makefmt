@@ -1,0 +1,6 @@
+[confirm("a")]
+[group("x")]
+[no-cd]
+[private]
+foo:
+    echo

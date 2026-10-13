@@ -1,0 +1,6 @@
+[unix]
+set indentation := "\t"
+[windows]
+set indentation := "  "
+foo:
+	echo a

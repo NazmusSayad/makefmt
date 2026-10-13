@@ -1,0 +1,5 @@
+set default-script
+
+[shell]
+foo:
+  echo foo

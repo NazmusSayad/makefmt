@@ -1,0 +1,5 @@
+set default-script
+set script-interpreter := ['sh', '-x']
+
+foo:
+  echo foo

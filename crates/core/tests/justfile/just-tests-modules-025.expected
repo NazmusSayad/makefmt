@@ -1,0 +1,6 @@
+set default-list
+
+baz:
+    @echo BAZ
+
+qux:

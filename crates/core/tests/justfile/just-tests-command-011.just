@@ -1,0 +1,3 @@
+export x := 'FOO'
+
+y := `exit 1`

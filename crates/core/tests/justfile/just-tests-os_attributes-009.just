@@ -1,0 +1,8 @@
+[unix]
+f() := 'unix'
+
+[windows]
+f() := 'windows'
+
+foo:
+  @echo {{ f() }}

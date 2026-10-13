@@ -1,0 +1,4 @@
+we  := parent_directory('/')
+
+foo:
+  /usr/bin/env echo '{{we}}'

@@ -1,0 +1,5 @@
+error: indentation may not be mixed
+ ——▶ justfile:1:20
+  │
+1 │ set indentation := " \t"
+  │                    ^^^^^

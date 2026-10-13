@@ -1,0 +1,5 @@
+error: unexport `X` has invalid attribute `private`
+ ——▶ justfile:2:10
+  │
+2 │ unexport X
+  │          ^

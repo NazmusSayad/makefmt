@@ -1,0 +1,5 @@
+v := "1"
+foo a=v b=`echo hi` c=uppercase(v) d=("x" / "y") e="""
+  multi
+  """:
+    echo

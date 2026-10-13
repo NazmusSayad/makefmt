@@ -1,0 +1,5 @@
+error: unpaired carriage return
+ ——▶ justfile:1:15
+  │
+1 │       default:\a
+  │               ^

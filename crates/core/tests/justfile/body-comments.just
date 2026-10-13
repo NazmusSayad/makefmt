@@ -1,0 +1,4 @@
+foo:
+  # comment in body
+  echo a # not a comment
+  #comment

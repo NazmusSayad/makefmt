@@ -1,0 +1,5 @@
+a := "x"
+foo:
+  echo {{ (a +
+    a) }}
+  echo done

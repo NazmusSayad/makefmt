@@ -1,0 +1,5 @@
+error: option name for parameter `a` is empty
+ ——▶ justfile:1:16
+  │
+1 │ [arg("a", long="")]
+  │                ^^

@@ -1,0 +1,6 @@
+set lazy
+
+export x := 'FOO'
+
+bar:
+  @echo $x

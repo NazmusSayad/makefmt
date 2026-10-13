@@ -1,0 +1,5 @@
+error: unknown setting `nope`
+ ——▶ justfile:1:5
+  │
+1 │ set nope
+  │     ^^^^

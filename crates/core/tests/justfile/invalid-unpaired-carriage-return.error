@@ -1,0 +1,5 @@
+error: unpaired carriage return
+ ——▶ justfile:1:9
+  │
+1 │ a := "x"b := "y"
+  │         ^

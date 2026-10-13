@@ -1,0 +1,5 @@
+a := "x"
+foo:
+    echo {{ a }} {{ a }} {{ a }} {{ a + a }}
+    echo {{{{literal}}
+    echo {{{{a}} {{ a }}

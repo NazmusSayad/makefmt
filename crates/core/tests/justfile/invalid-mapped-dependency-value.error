@@ -1,0 +1,5 @@
+error: expected '*', backtick, '!', '[', identifier, '(', ')', '/', or string, but found '+'
+ ——▶ justfile:2:15
+  │
+2 │ foo: *(b *"x" + "y")
+  │               ^

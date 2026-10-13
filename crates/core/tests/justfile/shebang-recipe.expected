@@ -1,0 +1,8 @@
+foo:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "hello"
+
+    if true; then
+      echo nested
+    fi

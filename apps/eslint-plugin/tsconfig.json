@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node"],
+    "paths": { "eslint-plugin-makefmt": ["./src/index.ts"] }
+  },
+  "include": ["src", "test"]
+}

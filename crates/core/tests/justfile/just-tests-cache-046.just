@@ -1,0 +1,4 @@
+[cache(outputs = 'foo')]
+[script]
+bar:
+  touch foo

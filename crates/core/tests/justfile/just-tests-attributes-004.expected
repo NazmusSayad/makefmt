@@ -1,0 +1,11 @@
+[android]
+[dragonfly]
+[freebsd]
+[linux]
+[macos]
+[netbsd]
+[no-exit-message]
+[openbsd]
+[windows]
+foo:
+    exit 1

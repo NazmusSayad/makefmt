@@ -1,0 +1,6 @@
+[cache(outputs = 'link')]
+[script]
+bar:
+  echo bar
+  touch foo
+  ln -sf foo link

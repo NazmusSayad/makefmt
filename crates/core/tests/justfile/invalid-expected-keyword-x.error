@@ -1,0 +1,5 @@
+error: expected keyword `x` but found identifier `y`
+ ——▶ justfile:1:9
+  │
+1 │ import? y"a.just"
+  │         ^

@@ -1,7 +1,7 @@
 {
   "name": "makefmt",
-  "displayName": "makefmt - Makefile Formatter",
-  "description": "Fast, safe Makefile formatter. Aligns assignments and line continuations, indents conditionals, and never touches recipes.",
+  "displayName": "makefmt - Makefile & justfile Formatter",
+  "description": "Fast, safe Makefile and justfile formatter. Aligns assignments and line continuations, indents conditionals, never touches recipes, and formats justfiles like just --fmt.",
   "version": "0.0.0",
   "publisher": "NazmusSayad",
   "icon": "icon.png",
@@ -28,6 +28,8 @@
     "make",
     "gnu make",
     "mk",
+    "just",
+    "justfile",
     "formatter",
     "format",
     "beautify",
@@ -39,7 +41,8 @@
   "main": "./dist/extension.js",
   "browser": "./dist/extension.js",
   "activationEvents": [
-    "onLanguage:makefile"
+    "onLanguage:makefile",
+    "onLanguage:just"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -48,6 +51,23 @@
     "virtualWorkspaces": true
   },
   "contributes": {
+    "languages": [
+      {
+        "id": "just",
+        "aliases": [
+          "Just",
+          "justfile"
+        ],
+        "filenames": [
+          "justfile",
+          "Justfile",
+          ".justfile"
+        ],
+        "extensions": [
+          ".just"
+        ]
+      }
+    ],
     "configuration": {
       "title": "makefmt",
       "properties": {
@@ -81,16 +101,20 @@
     "configurationDefaults": {
       "[makefile]": {
         "editor.defaultFormatter": "NazmusSayad.makefmt"
+      },
+      "[just]": {
+        "editor.defaultFormatter": "NazmusSayad.makefmt"
       }
     }
   },
   "scripts": {
-    "build:wasm": "cargo build -p makefmt-vscode --release --target wasm32-unknown-unknown && mkdir -p dist && cp ../../target/wasm32-unknown-unknown/release/makefmt_vscode.wasm dist/makefmt.wasm",
+    "build:wasm": "pnpm --filter @makefmt/wasm build && mkdir -p dist && cp node_modules/@makefmt/wasm/dist/makefmt.wasm dist/makefmt.wasm",
     "build": "pnpm build:wasm && esbuild src/extension.ts --bundle --outfile=dist/extension.js --format=cjs --platform=neutral --target=es2022 --external:vscode --minify",
     "typecheck": "tsc --noEmit",
     "package": "pnpm build && cp ../../LICENSE LICENSE && vsce package --no-dependencies --out makefmt.vsix"
   },
   "devDependencies": {
+    "@makefmt/wasm": "workspace:*",
     "@types/vscode": "~1.100.0",
     "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2",

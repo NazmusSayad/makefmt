@@ -1,0 +1,3 @@
+[timestamp]
+recipe:
+  echo foo

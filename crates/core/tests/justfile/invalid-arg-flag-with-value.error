@@ -1,0 +1,5 @@
+error: `flag` attribute for argument `a` takes no value
+ ——▶ justfile:1:17
+  │
+1 │ [arg("a", long, flag="x")]
+  │                 ^^^^

@@ -1,0 +1,14 @@
+# .RECIPEPREFIX is mentioned in this comment
+.RECIPEPREFIX = >
+all:
+>@echo with prefix
+>  echo indented
+ifdef A
+X = 1
+endif
+.RECIPEPREFIX =
+build:
+	@echo tab again
+.RECIPEPREFIX := >
+again:
+>echo again

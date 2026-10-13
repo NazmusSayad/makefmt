@@ -1,0 +1,12 @@
+A = 1
+all:
+ifeq ($(A),1)
+	@echo one
+else
+	@echo other
+endif
+	@echo done
+build: dep
+ifdef A
+	echo  a   b
+endif

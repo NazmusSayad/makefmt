@@ -1,0 +1,5 @@
+error: expected escape sequence but found end-of-file
+ ——▶ justfile:2:1
+  │
+2 │ \
+  │ ^

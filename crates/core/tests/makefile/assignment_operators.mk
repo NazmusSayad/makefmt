@@ -1,0 +1,17 @@
+A=1
+BB  =  2
+C:=3
+DD   :=   4
+E::=5
+FF ::= 6
+G:::=7
+HH :::= 8
+I?=9
+JJ ?= 10
+K+=11
+LL += 12
+M!=echo 13
+NN != echo 14
+O	=	tabbed
+P =
+Q:=

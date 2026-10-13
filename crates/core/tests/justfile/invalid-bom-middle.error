@@ -1,0 +1,5 @@
+error: expected '@', '[', comment, end of file, end of line, or identifier, but found byte order mark
+ ——▶ justfile:2:1
+  │
+2 │ ﻿b := "2"
+  │ ^

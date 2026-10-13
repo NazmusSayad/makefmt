@@ -1,0 +1,3 @@
+v := "1"
+foo a=v b='1' c="2" d=`x` e=(v) f=uppercase(v) g=x'~':
+    echo

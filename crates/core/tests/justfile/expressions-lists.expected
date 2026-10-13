@@ -1,0 +1,7 @@
+set lists
+set unstable
+a := ["x", "y"]
+b := []
+c := ["x"]
+d := a ++ b ++ ["z"]
+e := [[], ["x"], [a]]

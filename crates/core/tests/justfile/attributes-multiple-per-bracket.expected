@@ -1,0 +1,11 @@
+[group("x")]
+[no-cd]
+[private]
+foo:
+    echo
+
+[linux]
+[macos]
+[unix]
+bar:
+    echo

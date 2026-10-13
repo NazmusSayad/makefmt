@@ -1,8 +1,10 @@
 mod format;
+mod justfile;
 
 use serde::Deserialize;
 
 pub use format::format;
+pub use justfile::format_justfile;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(default, deny_unknown_fields)]

@@ -3,7 +3,7 @@ use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use ignore::WalkBuilder;
 use makefmt::Options;
 
@@ -16,7 +16,7 @@ const VERSION: &str = match option_env!("MAKEFMT_VERSION") {
 #[command(
     name = "makefmt",
     version = VERSION,
-    about = "Fast, opinionated Makefile formatter"
+    about = "Fast, opinionated Makefile and justfile formatter"
 )]
 struct Cli {
     #[arg(help = "Files or directories to format; omit or pass - to read stdin")]
@@ -45,6 +45,18 @@ struct Cli {
     align_continuations: Option<bool>,
     #[arg(long, value_name = "BOOL", help = "Indent conditional blocks")]
     indent_conditionals: Option<bool>,
+    #[arg(
+        long,
+        value_enum,
+        help = "Format stdin and files passed by name as this language instead of detecting it from the file name; stdin defaults to makefile"
+    )]
+    language: Option<Language>,
+}
+
+#[derive(Clone, Copy, ValueEnum)]
+enum Language {
+    Makefile,
+    Justfile,
 }
 
 fn main() -> ExitCode {
@@ -75,24 +87,27 @@ fn run(cli: &Cli) -> Result<ExitCode, String> {
 
     let mut stdout = io::stdout().lock();
     let mut unformatted = false;
-    for file in collect_files(&cli.paths)? {
-        let source =
-            fs::read_to_string(&file).map_err(|error| format!("{}: {error}", file.display()))?;
-        let absolute =
-            fs::canonicalize(&file).map_err(|error| format!("{}: {error}", file.display()))?;
-        let directory = absolute
-            .parent()
-            .ok_or_else(|| format!("{}: has no parent directory", file.display()))?;
-        let formatted = makefmt::format(&source, &load_options(directory, cli)?);
+    let mut failed = false;
+    for (file, language) in collect_files(&cli.paths, cli.language)? {
+        let (source, formatted) = match format_file(&file, language, cli) {
+            Ok(result) => result,
+            Err(message) => {
+                failed = true;
+                eprintln!("makefmt: {}: {message}", file.display());
+                continue;
+            }
+        };
         if cli.check {
             if formatted != source {
                 unformatted = true;
                 writeln!(stdout, "{}", file.display()).map_err(|error| error.to_string())?;
             }
         } else if cli.write {
-            if formatted != source {
-                fs::write(&file, formatted)
-                    .map_err(|error| format!("{}: {error}", file.display()))?;
+            if formatted != source
+                && let Err(error) = fs::write(&file, formatted)
+            {
+                failed = true;
+                eprintln!("makefmt: {}: {error}", file.display());
             }
         } else {
             stdout
@@ -101,10 +116,23 @@ fn run(cli: &Cli) -> Result<ExitCode, String> {
         }
     }
 
+    if failed {
+        return Ok(ExitCode::from(2));
+    }
     if unformatted {
         return Ok(ExitCode::from(1));
     }
     Ok(ExitCode::SUCCESS)
+}
+
+fn format_file(file: &Path, language: Language, cli: &Cli) -> Result<(String, String), String> {
+    let source = fs::read_to_string(file).map_err(|error| error.to_string())?;
+    let absolute = fs::canonicalize(file).map_err(|error| error.to_string())?;
+    let directory = absolute
+        .parent()
+        .ok_or_else(|| "has no parent directory".to_string())?;
+    let formatted = format_source(&source, language, directory, cli)?;
+    Ok((source, formatted))
 }
 
 fn run_stdin(cli: &Cli) -> Result<ExitCode, String> {
@@ -116,7 +144,9 @@ fn run_stdin(cli: &Cli) -> Result<ExitCode, String> {
         .read_to_string(&mut source)
         .map_err(|error| format!("stdin: {error}"))?;
     let directory = std::env::current_dir().map_err(|error| error.to_string())?;
-    let formatted = makefmt::format(&source, &load_options(&directory, cli)?);
+    let language = cli.language.unwrap_or(Language::Makefile);
+    let formatted = format_source(&source, language, &directory, cli)
+        .map_err(|error| format!("stdin: {error}"))?;
     if cli.check {
         if formatted != source {
             eprintln!("stdin is not formatted");
@@ -130,34 +160,76 @@ fn run_stdin(cli: &Cli) -> Result<ExitCode, String> {
     Ok(ExitCode::SUCCESS)
 }
 
-fn collect_files(paths: &[PathBuf]) -> Result<Vec<PathBuf>, String> {
+fn collect_files(
+    paths: &[PathBuf],
+    language: Option<Language>,
+) -> Result<Vec<(PathBuf, Language)>, String> {
     let mut files = Vec::new();
     for path in paths {
         let metadata =
             fs::metadata(path).map_err(|error| format!("{}: {error}", path.display()))?;
         if !metadata.is_dir() {
-            files.push(path.clone());
+            let language = match language {
+                Some(language) => language,
+                None => detect_language(path).ok_or_else(|| {
+                    format!(
+                        "{}: not a Makefile or justfile name; pass --language",
+                        path.display()
+                    )
+                })?,
+            };
+            files.push((path.clone(), language));
             continue;
         }
         let walker = WalkBuilder::new(path)
             .require_git(false)
+            .hidden(false)
+            .filter_entry(|entry| {
+                let name = entry.file_name();
+                !name.as_encoded_bytes().starts_with(b".") || name.eq_ignore_ascii_case(".justfile")
+            })
             .sort_by_file_name(|a, b| a.cmp(b))
             .build();
         for entry in walker {
             let entry = entry.map_err(|error| error.to_string())?;
-            if entry.file_type().is_some_and(|kind| kind.is_file()) && is_makefile(entry.path()) {
-                files.push(entry.into_path());
+            if !entry.file_type().is_some_and(|kind| kind.is_file()) {
+                continue;
+            }
+            if let Some(language) = detect_language(entry.path()) {
+                files.push((entry.into_path(), language));
             }
         }
     }
     Ok(files)
 }
 
-fn is_makefile(path: &Path) -> bool {
-    let name = path.file_name().and_then(|name| name.to_str());
+fn detect_language(path: &Path) -> Option<Language> {
+    let name = path.file_name()?.to_str()?;
     let extension = path.extension().and_then(|extension| extension.to_str());
-    matches!(name, Some("Makefile" | "makefile" | "GNUmakefile"))
+    if matches!(name, "Makefile" | "makefile" | "GNUmakefile")
         || matches!(extension, Some("mk" | "mak" | "make"))
+    {
+        return Some(Language::Makefile);
+    }
+    if name.eq_ignore_ascii_case("justfile")
+        || name.eq_ignore_ascii_case(".justfile")
+        || extension == Some("just")
+    {
+        return Some(Language::Justfile);
+    }
+    None
+}
+
+fn format_source(
+    source: &str,
+    language: Language,
+    directory: &Path,
+    cli: &Cli,
+) -> Result<String, String> {
+    match language {
+        Language::Makefile => Ok(makefmt::format(source, &load_options(directory, cli)?)),
+        Language::Justfile => makefmt::format_justfile(source),
+    }
 }
 
 fn load_options(directory: &Path, cli: &Cli) -> Result<Options, String> {

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12.11.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just@1.58.0
+      - working-directory: ${{ runner.temp }}
+        run: |
+          curl -fsSL https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz | tar xz
+          cd make-4.4.1
+          ./configure --prefix=/usr/local --disable-nls
+          make
+          sudo make install
+          hash -r
+          make --version
+      - run: rustup target add wasm32-unknown-unknown
+      - run: rustup component add clippy rustfmt
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test

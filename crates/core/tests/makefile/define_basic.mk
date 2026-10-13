@@ -1,0 +1,33 @@
+define PLAIN
+line one
+  indented line
+	tabbed line
+trailing spaces   
+# not a comment
+ifeq (a,b)
+endif
+
+endef
+define   RECURSIVE   =
+$(A)
+endef
+define SIMPLE :=
+x
+endef
+define APPEND +=
+y
+endef
+define COND ?=
+z
+endef
+define IMMEDIATE ::=
+w
+endef
+define POSIX_IMM :::=
+v
+endef
+define EMPTY
+endef
+define WITH_COMMENT
+body
+endef # done

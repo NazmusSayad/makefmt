@@ -1,0 +1,5 @@
+error: expected '&&', '!=', '!~', '||', '==', '=~', format string continue, format string end, '(', '+', '++', or '/', but found end of file
+ ——▶ justfile:1:14
+  │
+1 │ a := f'{{ b 
+  │             ^

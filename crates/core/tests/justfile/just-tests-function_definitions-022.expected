@@ -1,0 +1,4 @@
+foo() := recipe_name()
+
+bar:
+    @echo {{ foo() }}

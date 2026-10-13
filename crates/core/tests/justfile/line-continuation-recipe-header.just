@@ -1,0 +1,6 @@
+foo a \
+  b:
+  echo
+bar: foo \
+  baz
+baz:

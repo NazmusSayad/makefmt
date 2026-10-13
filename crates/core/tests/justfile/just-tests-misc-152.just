@@ -1,0 +1,4 @@
+foo:
+  #!powershell
+
+  exit 0

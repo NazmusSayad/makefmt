@@ -1,0 +1,5 @@
+error: invalid `max` value `02`
+ ——▶ justfile:1:31
+  │
+1 │ [arg("a", long, multiple, max="02")]
+  │                               ^^^^

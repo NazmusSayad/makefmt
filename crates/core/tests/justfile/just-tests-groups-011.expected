@@ -1,0 +1,9 @@
+[group('A')]
+[private]
+foo:
+
+[group('B')]
+bar:
+
+[group('A')]
+baz:

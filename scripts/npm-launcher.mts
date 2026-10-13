@@ -14,7 +14,7 @@ const target = `${process.platform}-${process.arch}`
 const binary = binaries[target]
 if (!binary) {
   console.error(`makefmt does not support ${target}`)
-  process.exit(1)
+  process.exit(2)
 }
 
 const result = spawnSync(
@@ -22,6 +22,9 @@ const result = spawnSync(
   process.argv.slice(2),
   { stdio: 'inherit' }
 )
-if (result.error) throw result.error
+if (result.error) {
+  console.error(`makefmt: ${result.error.message}`)
+  process.exit(2)
+}
 if (result.signal) process.kill(process.pid, result.signal)
 process.exit(result.status)

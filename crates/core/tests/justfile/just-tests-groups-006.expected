@@ -1,0 +1,11 @@
+[group('x')]
+[group('y')]
+f:
+
+[group('b')]
+b:
+
+[group('a')]
+e:
+
+c:

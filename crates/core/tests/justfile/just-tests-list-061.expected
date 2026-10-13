@@ -1,0 +1,4 @@
+[arg('bar', short='b')]
+[arg('foo', long)]
+recipe qux foo='x' bar='y' baz='z':
+    echo {{ foo }} {{ bar }} {{ baz }} {{ qux }}

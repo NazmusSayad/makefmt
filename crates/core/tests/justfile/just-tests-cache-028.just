@@ -1,0 +1,5 @@
+[cache(outputs = file)]
+[script]
+bar file:
+  echo bar
+  touch {{file}}

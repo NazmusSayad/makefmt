@@ -1,0 +1,8 @@
+[unix]
+set quiet
+
+[windows]
+set quiet := false
+
+foo:
+    echo bar

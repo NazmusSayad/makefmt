@@ -1,0 +1,2 @@
+set no-cd
+set working-directory := 'bar'

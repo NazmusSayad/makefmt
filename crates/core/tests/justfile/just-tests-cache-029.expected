@@ -1,0 +1,7 @@
+set lists
+
+[cache(outputs=['foo', 'baz'])]
+[script]
+bar:
+    echo bar
+    touch foo baz

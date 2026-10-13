@@ -1,0 +1,7 @@
+set default-list
+
+foo:
+    @echo foo
+
+bar:
+    @echo bar

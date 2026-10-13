@@ -1,0 +1,12 @@
+{
+  "name": "@makefmt/wasm",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./makefmt.wasm": "./dist/makefmt.wasm"
+  },
+  "scripts": {
+    "build": "cargo build -p makefmt-wasm --release --target wasm32-unknown-unknown && mkdir -p dist && cp ../../target/wasm32-unknown-unknown/release/makefmt_wasm.wasm dist/makefmt.wasm"
+  }
+}

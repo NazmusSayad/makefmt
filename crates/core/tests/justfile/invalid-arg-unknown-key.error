@@ -1,0 +1,5 @@
+error: unknown key `nope` for `arg` attribute
+ ——▶ justfile:1:11
+  │
+1 │ [arg("a", nope)]
+  │           ^^^^

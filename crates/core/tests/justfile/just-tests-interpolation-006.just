@@ -1,0 +1,8 @@
+foo:
+  #!/usr/bin/env cat
+  echo {{
+    'a'
++ 'b'
+       + 'c'
+  }}
+  echo foo

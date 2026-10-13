@@ -1,0 +1,3 @@
+[script('sh', '-x')]
+foo:
+  echo foo

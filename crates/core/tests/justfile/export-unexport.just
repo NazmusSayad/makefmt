@@ -1,0 +1,5 @@
+export A := "1"
+export   B:="2"
+unexport C
+unexport   D # comment
+export E := A + B

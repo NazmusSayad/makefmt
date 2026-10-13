@@ -1,0 +1,5 @@
+error: attribute key `inputs` requires value
+ ——▶ justfile:1:8
+  │
+1 │ [cache(inputs)]
+  │        ^^^^^^

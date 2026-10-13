@@ -1,0 +1,3 @@
+[script('cat')]
+foo:
+    #!/bin/sh

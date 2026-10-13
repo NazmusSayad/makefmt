@@ -1,0 +1,7 @@
+[script("bash")]
+a:
+  echo
+
+[script: "sh"]
+b:
+  echo

@@ -1,0 +1,5 @@
+error: expected hex digit [0-9A-Fa-f] but found `g`
+ ——▶ justfile:1:6
+  │
+1 │ a := "\u{12g}"
+  │      ^^^^^^^^^

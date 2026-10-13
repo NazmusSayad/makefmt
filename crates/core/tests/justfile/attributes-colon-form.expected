@@ -1,0 +1,5 @@
+[confirm('sure?')]
+[doc("documented")]
+[group('x')]
+foo:
+    echo

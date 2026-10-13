@@ -1,0 +1,8 @@
+set lists
+[arg('a', short='a')]
+[arg('e', short='e', pattern='abc|xyz')]
+[arg('g', short='g', value='foo')]
+[arg('d', long='delightful', short='d')]
+[arg('f', long='f', pattern=['lucky', 'dog'])]
+[arg('b', pattern='123|789', help='hello')]
+foo a b c='abc' d e f='xyz' g='bar' *h:

@@ -1,0 +1,3 @@
+set shell := ["bash"]
+set windows-shell := ["cmd", "/c"]
+set script-interpreter := ["sh"]

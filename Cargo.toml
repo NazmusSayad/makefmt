@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/core", "apps/cli", "apps/vscode"]
+members = ["crates/core", "crates/wasm", "apps/cli"]
 resolver = "3"
 
 [profile.release]

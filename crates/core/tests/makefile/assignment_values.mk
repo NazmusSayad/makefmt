@@ -1,0 +1,18 @@
+A = trailing spaces   
+B := value # comment  
+C = a\#b
+D = $(subst :,=,a:b)
+E := $(SRC:.c=.o)
+F = $(patsubst %.c,%.o,$(wildcard *.c))
+G = x=y a:b
+H = $$HOME
+I := 'single  quoted'
+J = "double  quoted"
+K = =
+L = :x
+M = a;b|c&d
+N =  leading
+O := $(if $(A),yes,no)
+P = 100%
+Q = path\\
+R = tab	inside

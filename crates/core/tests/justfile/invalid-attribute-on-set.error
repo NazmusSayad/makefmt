@@ -1,0 +1,5 @@
+error: setting `quiet` has invalid attribute `private`
+ ——▶ justfile:2:5
+  │
+2 │ set quiet
+  │     ^^^^^

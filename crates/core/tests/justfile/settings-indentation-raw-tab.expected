@@ -1,0 +1,3 @@
+set indentation := '	'
+foo:
+	echo a

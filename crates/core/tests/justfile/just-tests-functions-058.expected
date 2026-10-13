@@ -1,0 +1,3 @@
+x := source_file()
+bar:
+    @echo '{{ x }}'

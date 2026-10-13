@@ -1,0 +1,8 @@
+[continue]
+a:
+
+[continue("SIGHUP", "SIGINT", "SIGQUIT")]
+b:
+
+[continue("SIGINT")]
+c:

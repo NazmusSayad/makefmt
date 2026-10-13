@@ -1,0 +1,29 @@
+A = x
+ifeq ($(A),x)
+  R1 = paren
+endif
+ifeq ( $(A) , x )
+  R2 = paren spaced
+endif
+ifeq "$(A)" "x"
+  R3 = double
+endif
+ifeq '$(A)' 'x'
+  R4 = single
+endif
+ifeq "$(A)" 'x'
+  R5 = mixed
+endif
+ifneq '$(A)' "y"
+  R6 = mixed2
+endif
+ifeq ($(A),)
+  R7 = empty
+endif
+ifeq (,$(filter a,b))
+  R8 = filter
+endif
+ifeq ($(A), \
+  x)
+  R9 = continued
+endif

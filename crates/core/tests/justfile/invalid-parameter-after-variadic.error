@@ -1,0 +1,5 @@
+error: parameter `b` follows variadic parameter
+ ——▶ justfile:1:8
+  │
+1 │ foo +a b:
+  │        ^

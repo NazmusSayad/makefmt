@@ -1,0 +1,5 @@
+vpath %.c src
+vpath   %.h   include:lib
+vpath %.c
+vpath
+VPATH = src:lib

@@ -1,0 +1,5 @@
+error: expected '*', ':', '$', identifier, or '+', but found end of file
+  ——▶ justfile:20:4
+   │
+20 │ foo
+   │    ^

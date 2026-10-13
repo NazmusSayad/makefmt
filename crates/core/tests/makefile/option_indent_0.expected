@@ -1,0 +1,13 @@
+A                 = one \
+two                     \
+three
+LONG_NAME         := alpha \
+beta                       \
+gamma
+B                 = x \
+y
+C                 = first \
+
+D                 = done
+override export E += a \
+b

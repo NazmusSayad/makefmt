@@ -1,0 +1,10 @@
+name := "world"
+a := f'hello {{ name }}'
+b := f"x {{ name + "!" }} y {{ name }} z"
+c := f'''
+  multi {{ name }}
+'''
+d := f"escaped {{{{ not }}"
+e := f'plain'
+foo:
+    echo {{ f"in {{ name }} body" }}

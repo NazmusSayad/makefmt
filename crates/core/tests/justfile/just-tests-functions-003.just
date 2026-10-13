@@ -1,0 +1,6 @@
+p := env_var('USER')
+b := env_var_or_default('ZADDY', 'HTAP')
+x := env_var_or_default('XYZ', 'ABC')
+
+foo:
+  /usr/bin/env echo '{{p}}' '{{b}}' '{{x}}'

@@ -1,0 +1,5 @@
+
+[env('foo', 'bar')]
+baz:
+  @echo {{ env('foo') }}.txt
+

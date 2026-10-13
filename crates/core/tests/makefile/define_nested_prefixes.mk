@@ -1,0 +1,27 @@
+override define O
+body
+endef
+export define E
+body
+endef
+unexport define U
+  body
+endef
+private define P
+body
+endef
+override   export   define OE =
+body
+endef
+define OUTER
+define INNER
+  inner body
+endef
+	endef
+outer body
+endef
+ifdef A
+  define IN_COND
+   keep   this
+  endef
+endif

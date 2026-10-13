@@ -1,0 +1,6 @@
+foo:
+    echo a
+    # body comment
+
+    # still body?
+bar:

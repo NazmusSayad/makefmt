@@ -1,0 +1,5 @@
+set lists
+set unstable
+b x:
+d: *(b *["1", "2"])
+e: *(b *["a"])

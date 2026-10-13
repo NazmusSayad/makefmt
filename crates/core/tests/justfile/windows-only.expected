@@ -1,0 +1,5 @@
+[windows]
+foo:
+    echo
+[windows]
+set windows-shell := ["cmd", "/c"]

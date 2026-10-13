@@ -149,6 +149,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
+name = "escape8259"
+version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f1f0d310082fd5de539d4f41601182241147498444a7695c520288a0cdbead6"
+
+[[package]]
 name = "globset"
 version = "0.4.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -206,6 +212,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
+name = "libtest-mimic"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14e6ba06f0ade6e504aff834d7c34298e5155c6baca353cc6a4aaff2f9fd7f33"
+dependencies = [
+ "anstream",
+ "anstyle",
+ "clap",
+ "escape8259",
+]
+
+[[package]]
 name = "log"
 version = "0.4.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -215,6 +233,7 @@ checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
 name = "makefmt"
 version = "0.0.0"
 dependencies = [
+ "libtest-mimic",
  "serde",
  "toml",
 ]
@@ -229,7 +248,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "makefmt-vscode"
+name = "makefmt-wasm"
 version = "0.0.0"
 dependencies = [
  "makefmt",

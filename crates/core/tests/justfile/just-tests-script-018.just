@@ -1,0 +1,11 @@
+set script-interpreter := ['sh']
+
+[script]
+foo:
+  case $- in
+    *e*) echo '-e is set';;
+  esac
+
+  case $- in
+    *u*) echo '-u is set';;
+  esac

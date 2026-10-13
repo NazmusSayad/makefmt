@@ -1,0 +1,6 @@
+include       = x
+export        = y
+define        = z
+ifdef         = w
+override ifeq := q
+all:; @echo $(include)

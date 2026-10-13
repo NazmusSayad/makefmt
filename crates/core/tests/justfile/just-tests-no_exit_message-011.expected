@@ -1,0 +1,6 @@
+set no-exit-message
+
+# This is a doc comment
+hello:
+    @echo 'Hello, World!'
+    @exit 100

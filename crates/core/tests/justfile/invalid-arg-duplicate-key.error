@@ -1,0 +1,5 @@
+error: duplicate key `long` for `arg` attribute
+ ——▶ justfile:1:17
+  │
+1 │ [arg("a", long, long)]
+  │                 ^^^^

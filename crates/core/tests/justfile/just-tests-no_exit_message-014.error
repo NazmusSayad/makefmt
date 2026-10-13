@@ -1,0 +1,5 @@
+error: recipe `bar` has both `[exit-message]` and `[no-exit-message]` attributes
+ ——▶ justfile:2:1
+  │
+2 │ bar:
+  │ ^^^

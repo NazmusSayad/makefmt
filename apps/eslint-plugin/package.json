@@ -1,0 +1,64 @@
+{
+  "name": "eslint-plugin-makefmt",
+  "version": "0.0.0",
+  "description": "ESLint plugin that formats Makefiles and justfiles with makefmt. Aligns assignments and line continuations, indents conditionals, and never touches recipes.",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "makefile",
+    "make",
+    "gnu make",
+    "justfile",
+    "just",
+    "formatter",
+    "format",
+    "fmt",
+    "makefmt"
+  ],
+  "license": "MIT",
+  "author": "Nazmus Sayad",
+  "homepage": "https://github.com/NazmusSayad/makefmt#readme",
+  "bugs": {
+    "url": "https://github.com/NazmusSayad/makefmt/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NazmusSayad/makefmt.git",
+    "directory": "apps/eslint-plugin"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm --filter @makefmt/wasm build && mkdir -p dist && cp node_modules/@makefmt/wasm/dist/makefmt.wasm dist/makefmt.wasm && esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --platform=node --target=node20 --external:@eslint/plugin-kit && tsc -p tsconfig.build.json && cp ../../LICENSE LICENSE",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm build && node --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@eslint/core": "^1.2.1",
+    "@eslint/plugin-kit": "^0.7.3"
+  },
+  "peerDependencies": {
+    "eslint": ">=9.7.0"
+  },
+  "devDependencies": {
+    "@makefmt/wasm": "workspace:*",
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.12.0",
+    "oxlint": "^1.87.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  }
+}

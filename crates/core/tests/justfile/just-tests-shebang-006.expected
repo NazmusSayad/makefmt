@@ -1,0 +1,4 @@
+default:
+    #!cmd.exe /c
+    #!foo
+    @echo Hello-World

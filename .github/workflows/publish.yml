@@ -9,7 +9,11 @@ permissions:
   id-token: write
 
 jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
   build:
+    needs: test
     strategy:
       matrix:
         include:
@@ -81,7 +85,29 @@ jobs:
       - run: npm publish --access public --tag ${{ github.event.release.prerelease && 'next' || 'latest' }}
         working-directory: dist/npm
 
+  publish-eslint-plugin:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12.11.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@latest version-patch
+      - run: rustup target add wasm32-unknown-unknown
+      - run: pnpm install --frozen-lockfile
+      - run: version-patch node "${{ github.event.release.tag_name }}" --prefix v --pkg-file apps/eslint-plugin/package.json
+      - run: pnpm --filter ./apps/eslint-plugin build
+      - run: npm publish --access public --tag ${{ github.event.release.prerelease && 'next' || 'latest' }}
+        working-directory: apps/eslint-plugin
+
   package-vscode:
+    needs: test
     if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     permissions:

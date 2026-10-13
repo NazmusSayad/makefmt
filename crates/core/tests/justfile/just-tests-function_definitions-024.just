@@ -1,0 +1,8 @@
+set unstable
+
+x := `echo bar >> foo; wc -l < foo | tr -d ' '`
+
+f() := x
+
+bar:
+  @echo {{ x }} {{ f() }} {{ x }}

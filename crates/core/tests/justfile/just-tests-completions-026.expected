@@ -1,0 +1,2 @@
+foo:
+alias b := foo

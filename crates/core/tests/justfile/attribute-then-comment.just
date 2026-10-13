@@ -1,0 +1,3 @@
+[private] # comment
+foo:
+  echo

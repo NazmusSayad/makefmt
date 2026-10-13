@@ -1,0 +1,7 @@
+.POSIX:
+A = one \
+    two
+all: a \
+     b
+	echo hi
+B  =  x

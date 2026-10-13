@@ -1,0 +1,5 @@
+set positional-arguments
+
+foo bar:
+  #!/bin/sh
+  echo $1

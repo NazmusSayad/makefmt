@@ -1,5 +1,6 @@
 packages:
   - 'apps/*'
+  - 'crates/wasm'
 
 allowBuilds:
   esbuild: true

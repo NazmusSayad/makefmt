@@ -1,0 +1,12 @@
+[android]
+[confirm("y")]
+[env("A", "1")]
+[env("B", "2")]
+[group("a")]
+[group("z")]
+[metadata("a")]
+[metadata("b")]
+[private]
+[windows]
+foo:
+    echo

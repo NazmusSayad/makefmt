@@ -1,0 +1,6 @@
+set script-interpreter := ['sh', '-u']
+
+[cache]
+[script]
+foo:
+  echo bar

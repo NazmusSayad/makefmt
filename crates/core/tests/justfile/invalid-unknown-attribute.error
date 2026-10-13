@@ -1,0 +1,5 @@
+error: unknown attribute `nope`
+ ——▶ justfile:1:2
+  │
+1 │ [nope]
+  │  ^^^^

@@ -1,0 +1,9 @@
+all:build   test
+build :   a.c   b.c
+	@echo build
+test:a.c
+	echo  test  
+clean  :
+	-rm -f *.o
+out/x.o dir/y.o   z.o:   x.c
+.PHONY:   all   clean

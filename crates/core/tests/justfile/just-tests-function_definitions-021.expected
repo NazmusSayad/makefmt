@@ -1,0 +1,7 @@
+foo() := is_dependency()
+
+bar: baz
+    @echo 'bar {{ foo() }}'
+
+baz:
+    @echo 'baz {{ foo() }}'

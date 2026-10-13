@@ -1,0 +1,13 @@
+foo b='b'\
+        :
+  #!/usr/bin/env cat
+
+  a
+
+  {{ \
+     b \
+  }}
+
+
+  c
+

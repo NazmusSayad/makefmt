@@ -1,0 +1,7 @@
+import 'a.just'
+import 'b.just'
+import 'c.just'
+import 'd.just'
+x:
+y:
+z:

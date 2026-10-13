@@ -1,0 +1,5 @@
+error: argument attribute `max` only valid with `multiple` or a variadic parameter
+ ——▶ justfile:1:17
+  │
+1 │ [arg("a", long, max="2")]
+  │                 ^^^

@@ -1,0 +1,11 @@
+[android]
+[dragonfly]
+[freebsd]
+[linux]
+[macos]
+[netbsd]
+[openbsd]
+[unix]
+[windows]
+foo:
+    echo bar

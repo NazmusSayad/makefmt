@@ -1,0 +1,5 @@
+error: import `"x"` has invalid attribute `private`
+ ——▶ justfile:2:9
+  │
+2 │ import? "x"
+  │         ^^^

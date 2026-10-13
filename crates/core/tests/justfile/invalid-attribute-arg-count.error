@@ -1,0 +1,5 @@
+error: attribute `group` got 0 arguments but takes 1 argument
+ ——▶ justfile:1:2
+  │
+1 │ [group]
+  │  ^^^^^

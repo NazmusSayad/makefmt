@@ -1,0 +1,4 @@
+set positional-arguments
+
+foo *bar:
+    if [ -n "${1+1}" ]; then echo defined; else echo undefined; fi

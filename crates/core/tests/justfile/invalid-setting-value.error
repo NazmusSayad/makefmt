@@ -1,0 +1,5 @@
+error: expected keyword `true` or `false` but found identifier `maybe`
+ ——▶ justfile:1:14
+  │
+1 │ set quiet := maybe
+  │              ^^^^^

@@ -1,0 +1,5 @@
+# the doc
+[group("g")]
+[private]
+foo:
+    echo

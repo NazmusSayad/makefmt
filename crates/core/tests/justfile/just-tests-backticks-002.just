@@ -1,0 +1,6 @@
+set windows-shell := ['pwsh.exe', '-NoLogo', '-Command']
+
+foo := `Write-Output bar`
+
+default:
+  @echo {{foo}}

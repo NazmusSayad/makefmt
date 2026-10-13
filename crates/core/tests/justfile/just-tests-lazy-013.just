@@ -1,0 +1,10 @@
+set lazy
+
+x := `exit 1`
+
+foo: bar
+
+bar: baz
+
+baz:
+  @echo {{x}}

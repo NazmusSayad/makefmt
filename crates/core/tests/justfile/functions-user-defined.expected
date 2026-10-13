@@ -1,0 +1,6 @@
+set unstable
+f(a, b) := a + b
+g() := "x"
+h(a) := a
+i(a, b, c) := a + b + c
+r := f("1", "2") + g() + h("3")

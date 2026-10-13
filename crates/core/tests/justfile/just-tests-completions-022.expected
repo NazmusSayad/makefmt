@@ -1,0 +1,5 @@
+[group('baz')]
+foo:
+
+[group('bob')]
+bar:

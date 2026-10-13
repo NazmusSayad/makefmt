@@ -1,0 +1,4 @@
+set positional-arguments
+
+foo bar='baz':
+  echo $1

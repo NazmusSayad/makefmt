@@ -1,0 +1,10 @@
+foo:
+  #!/usr/bin/env cat
+
+  a
+
+  b
+
+
+  c
+

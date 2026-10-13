@@ -1,0 +1,2 @@
+[cache(inputs)]
+foo:

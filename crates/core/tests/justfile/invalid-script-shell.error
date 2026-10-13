@@ -1,0 +1,5 @@
+error: recipe `foo` has both `[script]` and `[shell]` attributes
+ ——▶ justfile:3:1
+  │
+3 │ foo:
+  │ ^^^

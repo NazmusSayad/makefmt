@@ -1,0 +1,5 @@
+error: mapped dependencies must have starred argument
+ ——▶ justfile:2:6
+  │
+2 │ foo: *(b "x")
+  │      ^
